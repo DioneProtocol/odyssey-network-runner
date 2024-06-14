@@ -202,7 +202,7 @@ var _ = ginkgo.AfterSuite(func() {
 })
 
 var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
-	ginkgo.It("can create blockhains", func() {
+	ginkgo.It("can create blockchains", func() {
 		existingSubnetID := ""
 		createdBlockchainID := ""
 		createdBlockchainID2 := ""
@@ -635,14 +635,11 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 			)
 			gomega.Ω(err).Should(gomega.BeNil())
 
-			containerIDs := []ids.ID{
-				ids.GenerateTestID(),
-				ids.GenerateTestID(),
-				ids.GenerateTestID(),
-			}
+			preferredID := ids.GenerateTestID()
+			acceptedID := ids.GenerateTestID()
 			requestID := uint32(42)
 			chainID := avago_constants.PlatformChainID
-			msg, err := mc.Chits(chainID, requestID, []ids.ID{}, containerIDs)
+			msg, err := mc.Chits(chainID, requestID, preferredID, acceptedID)
 			gomega.Ω(err).Should(gomega.BeNil())
 
 			ctx, cancel = context.WithTimeout(context.Background(), 15*time.Second)
