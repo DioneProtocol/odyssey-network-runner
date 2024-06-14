@@ -6,10 +6,10 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/coreth/core/types"
-	"github.com/ava-labs/coreth/ethclient"
-	"github.com/ava-labs/coreth/interfaces"
+	"github.com/DioneProtocol/coreth/core/types"
+	"github.com/DioneProtocol/coreth/ethclient"
+	"github.com/DioneProtocol/coreth/interfaces"
+	"github.com/DioneProtocol/odysseygo/ids"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -51,10 +51,10 @@ type ethClient struct {
 
 // NewEthClient mainly takes ip/port info for usage in future calls
 // Connection can't be initialized in constructor because node is not ready when the constructor is called
-// It follows convention of most avalanchego api constructors that can be called without having a ready node
+// It follows convention of most odysseygo api constructors that can be called without having a ready node
 func NewEthClient(ipAddr string, port uint) EthClient {
 	// default to using the C chain
-	return NewEthClientWithChainID(ipAddr, port, "C")
+	return NewEthClientWithChainID(ipAddr, port, "D")
 }
 
 // NewEthClientWithChainID creates an EthClient initialized to connect to

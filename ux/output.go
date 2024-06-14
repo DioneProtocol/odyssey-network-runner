@@ -5,7 +5,7 @@ package ux
 import (
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 )
 
 func Print(log logging.Logger, msg string, args ...interface{}) {

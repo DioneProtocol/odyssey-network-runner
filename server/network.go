@@ -13,16 +13,16 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ava-labs/avalanche-network-runner/local"
-	"github.com/ava-labs/avalanche-network-runner/network"
-	"github.com/ava-labs/avalanche-network-runner/network/node"
-	"github.com/ava-labs/avalanche-network-runner/rpcpb"
-	"github.com/ava-labs/avalanche-network-runner/utils/constants"
-	"github.com/ava-labs/avalanche-network-runner/ux"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/ids"
-	avago_constants "github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/DioneProtocol/odyssey-network-runner/local"
+	"github.com/DioneProtocol/odyssey-network-runner/network"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node"
+	"github.com/DioneProtocol/odyssey-network-runner/rpcpb"
+	"github.com/DioneProtocol/odyssey-network-runner/utils/constants"
+	"github.com/DioneProtocol/odyssey-network-runner/ux"
+	"github.com/DioneProtocol/odysseygo/config"
+	"github.com/DioneProtocol/odysseygo/ids"
+	odygo_constants "github.com/DioneProtocol/odysseygo/utils/constants"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 	"golang.org/x/exp/maps"
 )
 
@@ -36,13 +36,13 @@ scrape_configs:
     static_configs:
       - targets:
         - localhost:9090
-  - job_name: avalanchego-machine
+  - job_name: odysseygo-machine
     static_configs:
      - targets:
        - localhost:9100
        labels:
          alias: machine
-  - job_name: avalanchego
+  - job_name: odysseygo
     metrics_path: /ext/metrics
     static_configs:
       - targets:
@@ -492,7 +492,7 @@ func (lc *localNetwork) LoadSnapshot(snapshotName string) error {
 }
 
 // Populates [lc.customChainIDToInfo] for all chains other than those on
-// the Primary Network (P-Chain, X-Chain, C-Chain.)
+// the Primary Network (O-Chain, A-Chain, D-Chain.)
 // Populates [lc.subnets] with all subnets that exist.
 // Doesn't contain the Primary network.
 // Assumes [lc.lock] is held.
@@ -513,13 +513,13 @@ func (lc *localNetwork) updateSubnetInfo(ctx context.Context) error {
 		}
 	}
 
-	blockchains, err := node.GetAPIClient().PChainAPI().GetBlockchains(ctx)
+	blockchains, err := node.GetAPIClient().OChainAPI().GetBlockchains(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, blockchain := range blockchains {
-		if blockchain.Name == "C-Chain" || blockchain.Name == "X-Chain" {
+		if blockchain.Name == "D-Chain" || blockchain.Name == "A-Chain" {
 			continue
 		}
 		lc.customChainIDToInfo[blockchain.ID] = chainInfo{
@@ -534,14 +534,14 @@ func (lc *localNetwork) updateSubnetInfo(ctx context.Context) error {
 		}
 	}
 
-	subnets, err := node.GetAPIClient().PChainAPI().GetSubnets(ctx, nil)
+	subnets, err := node.GetAPIClient().OChainAPI().GetSubnets(ctx, nil)
 	if err != nil {
 		return err
 	}
 
 	subnetIDList := []string{}
 	for _, subnet := range subnets {
-		if subnet.ID != avago_constants.PlatformChainID {
+		if subnet.ID != odygo_constants.OmegaChainID {
 			subnetIDList = append(subnetIDList, subnet.ID.String())
 		}
 	}
@@ -551,7 +551,7 @@ func (lc *localNetwork) updateSubnetInfo(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		vdrs, err := node.GetAPIClient().PChainAPI().GetCurrentValidators(ctx, subnetID, nil)
+		vdrs, err := node.GetAPIClient().OChainAPI().GetCurrentValidators(ctx, subnetID, nil)
 		if err != nil {
 			return err
 		}
@@ -567,7 +567,7 @@ func (lc *localNetwork) updateSubnetInfo(ctx context.Context) error {
 
 		isElastic := false
 		elasticSubnetID := ids.Empty
-		if _, _, err := node.GetAPIClient().PChainAPI().GetCurrentSupply(ctx, subnetID); err == nil {
+		if _, _, err := node.GetAPIClient().OChainAPI().GetCurrentSupply(ctx, subnetID); err == nil {
 			isElastic = true
 			elasticSubnetID, err = lc.nw.GetElasticSubnetID(ctx, subnetID)
 			if err != nil {
@@ -583,7 +583,7 @@ func (lc *localNetwork) updateSubnetInfo(ctx context.Context) error {
 	}
 
 	for chainID, chainInfo := range lc.customChainIDToInfo {
-		vs, err := node.GetAPIClient().PChainAPI().GetCurrentValidators(ctx, chainInfo.subnetID, nil)
+		vs, err := node.GetAPIClient().OChainAPI().GetCurrentValidators(ctx, chainInfo.subnetID, nil)
 		if err != nil {
 			return err
 		}

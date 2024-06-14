@@ -11,10 +11,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ava-labs/avalanche-network-runner/server"
-	"github.com/ava-labs/avalanche-network-runner/utils"
-	"github.com/ava-labs/avalanche-network-runner/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/DioneProtocol/odyssey-network-runner/server"
+	"github.com/DioneProtocol/odyssey-network-runner/utils"
+	"github.com/DioneProtocol/odyssey-network-runner/utils/constants"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -58,12 +58,12 @@ func NewCommand() *cobra.Command {
 
 func serverFunc(*cobra.Command, []string) (err error) {
 	if logDir == "" {
-		anrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
-		err = os.MkdirAll(anrRootDir, os.ModePerm)
+		onrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
+		err = os.MkdirAll(onrRootDir, os.ModePerm)
 		if err != nil {
 			return err
 		}
-		serverRootDir := filepath.Join(anrRootDir, serverRootDirPrefix)
+		serverRootDir := filepath.Join(onrRootDir, serverRootDirPrefix)
 		logDir, err = utils.MkDirWithTimestamp(serverRootDir)
 		if err != nil {
 			return err

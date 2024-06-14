@@ -8,11 +8,11 @@ import (
 	"os"
 	"time"
 
-	rpcb "github.com/ava-labs/avalanche-network-runner/rpcpb"
-	"github.com/ava-labs/avalanche-network-runner/ux"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	rpcb "github.com/DioneProtocol/odyssey-network-runner/rpcpb"
+	"github.com/DioneProtocol/odyssey-network-runner/ux"
+	"github.com/DioneProtocol/odysseygo/ids"
+	"github.com/DioneProtocol/odysseygo/staking"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 )
 
 const (
@@ -48,8 +48,8 @@ func NetworkIDFromGenesis(genesis []byte) (uint32, error) {
 }
 
 var (
-	ErrInvalidExecPath = errors.New("avalanche exec is invalid")
-	ErrNotExists       = errors.New("avalanche exec not exists")
+	ErrInvalidExecPath = errors.New("odyssey exec is invalid")
+	ErrNotExists       = errors.New("odyssey exec not exists")
 	ErrNotExistsPlugin = errors.New("plugin exec not exists")
 )
 

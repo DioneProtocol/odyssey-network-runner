@@ -12,9 +12,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ava-labs/avalanche-network-runner/local"
-	"github.com/ava-labs/avalanche-network-runner/rpcpb"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/DioneProtocol/odyssey-network-runner/local"
+	"github.com/DioneProtocol/odyssey-network-runner/rpcpb"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

@@ -10,14 +10,14 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/ava-labs/avalanche-network-runner/api"
-	"github.com/ava-labs/avalanche-network-runner/network"
-	"github.com/ava-labs/avalanche-network-runner/network/node"
-	"github.com/ava-labs/avalanche-network-runner/utils"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/DioneProtocol/odyssey-network-runner/api"
+	"github.com/DioneProtocol/odyssey-network-runner/network"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node"
+	"github.com/DioneProtocol/odyssey-network-runner/utils"
+	"github.com/DioneProtocol/odysseygo/config"
+	"github.com/DioneProtocol/odysseygo/ids"
+	"github.com/DioneProtocol/odysseygo/utils/constants"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 	dircopy "github.com/otiai10/copy"
 	"golang.org/x/exp/maps"
 )
@@ -33,7 +33,7 @@ type NetworkState struct {
 	SubnetID2ElasticSubnetID map[string]string `json:"subnetID2ElasticSubnetID"`
 }
 
-// snapshots generated using older ANR versions may contain deprecated avago flags
+// snapshots generated using older ONR versions may contain deprecated odygo flags
 func fixDeprecatedAvagoFlags(flags map[string]interface{}) error {
 	if vIntf, ok := flags[deprecatedWhitelistedSubnetsKey]; ok {
 		v, ok := vIntf.(string)
@@ -245,7 +245,7 @@ func (ln *localNetwork) loadSnapshot(
 	if err := json.Unmarshal(networkConfigJSON, &networkConfig); err != nil {
 		return fmt.Errorf("failure unmarshaling network config from snapshot: %w", err)
 	}
-	// fix deprecated avago flags
+	// fix deprecated odygo flags
 	if err := fixDeprecatedAvagoFlags(networkConfig.Flags); err != nil {
 		return err
 	}

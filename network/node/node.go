@@ -6,20 +6,20 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ava-labs/avalanche-network-runner/api"
-	"github.com/ava-labs/avalanche-network-runner/network/node/status"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/network/peer"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
+	"github.com/DioneProtocol/odyssey-network-runner/api"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node/status"
+	"github.com/DioneProtocol/odysseygo/config"
+	"github.com/DioneProtocol/odysseygo/ids"
+	"github.com/DioneProtocol/odysseygo/network/peer"
+	"github.com/DioneProtocol/odysseygo/snow/networking/router"
 )
 
-// Node represents an AvalancheGo node
+// Node represents an OdysseyGo node
 type Node interface {
 	// Return this node's name, which is unique
 	// across all the nodes in its network.
 	GetName() string
-	// Return this node's Avalanche node ID.
+	// Return this node's Odyssey node ID.
 	GetNodeID() ids.NodeID
 	// Return a client that can be used to make API calls.
 	GetAPIClient() api.Client
@@ -39,7 +39,7 @@ type Node interface {
 	SendOutboundMessage(ctx context.Context, peerID string, content []byte, op uint32) (bool, error)
 	// Return the state of the node process
 	Status() status.Status
-	// Return this node's avalanchego binary path
+	// Return this node's odysseygo binary path
 	GetBinaryPath() string
 	// Return this node's data dir
 	GetDataDir() string
@@ -59,7 +59,7 @@ type Node interface {
 	GetPaused() bool
 }
 
-// Config encapsulates an avalanchego configuration
+// Config encapsulates an odysseygo configuration
 type Config struct {
 	// A node's name must be unique from all other nodes
 	// in a network. If Name is the empty string, a

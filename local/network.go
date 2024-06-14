@@ -18,22 +18,22 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ava-labs/avalanche-network-runner/api"
-	"github.com/ava-labs/avalanche-network-runner/network"
-	"github.com/ava-labs/avalanche-network-runner/network/node"
-	"github.com/ava-labs/avalanche-network-runner/network/node/status"
-	"github.com/ava-labs/avalanche-network-runner/utils"
-	"github.com/ava-labs/avalanche-network-runner/utils/constants"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/network/peer"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/utils/beacon"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
+	"github.com/DioneProtocol/odyssey-network-runner/api"
+	"github.com/DioneProtocol/odyssey-network-runner/network"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node/status"
+	"github.com/DioneProtocol/odyssey-network-runner/utils"
+	"github.com/DioneProtocol/odyssey-network-runner/utils/constants"
+	"github.com/DioneProtocol/odysseygo/config"
+	"github.com/DioneProtocol/odysseygo/ids"
+	"github.com/DioneProtocol/odysseygo/network/peer"
+	"github.com/DioneProtocol/odysseygo/staking"
+	"github.com/DioneProtocol/odysseygo/utils/beacon"
+	"github.com/DioneProtocol/odysseygo/utils/crypto/bls"
+	"github.com/DioneProtocol/odysseygo/utils/ips"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
+	"github.com/DioneProtocol/odysseygo/utils/set"
+	"github.com/DioneProtocol/odysseygo/utils/wrappers"
 	"go.uber.org/zap"
 	"golang.org/x/exp/maps"
 	"golang.org/x/mod/semver"
@@ -51,7 +51,7 @@ const (
 	stopTimeout               = 30 * time.Second
 	healthCheckFreq           = 3 * time.Second
 	DefaultNumNodes           = 5
-	snapshotPrefix            = "anr-snapshot-"
+	snapshotPrefix            = "onr-snapshot-"
 	networkRootDirPrefix      = "network"
 	defaultDBSubdir           = "db"
 	defaultLogsSubdir         = "logs"
@@ -72,7 +72,7 @@ var (
 	chainConfigSubDir  = "chainConfigs"
 	subnetConfigSubDir = "subnetConfigs"
 
-	snapshotsRelPath = filepath.Join(".avalanche-network-runner", "snapshots")
+	snapshotsRelPath = filepath.Join(".odyssey-network-runner", "snapshots")
 
 	ErrSnapshotNotFound = errors.New("snapshot not found")
 )
@@ -149,7 +149,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	// load deprecated avago flags support information
+	// load deprecated odygo flags support information
 	if err = json.Unmarshal(deprecatedFlagsSupportBytes, &deprecatedFlagsSupport); err != nil {
 		panic(err)
 	}
@@ -202,7 +202,7 @@ func init() {
 	}
 
 	// load chain config
-	cChainConfig, err := fs.ReadFile(configsDir, "cchain_config.json")
+	dChainConfig, err := fs.ReadFile(configsDir, "dchain_config.json")
 	if err != nil {
 		panic(err)
 	}
@@ -212,7 +212,7 @@ func init() {
 		Flags:       flags,
 		Genesis:     string(updatedGenesis),
 		ChainConfigFiles: map[string]string{
-			"C": string(cChainConfig),
+			"D": string(dChainConfig),
 		},
 		UpgradeConfigFiles: map[string]string{},
 		SubnetConfigFiles:  map[string]string{},
@@ -288,7 +288,7 @@ func NewNetwork(
 
 // See NewNetwork.
 // [newAPIClientF] is used to create new API clients.
-// [nodeProcessCreator] is used to launch new avalanchego processes.
+// [nodeProcessCreator] is used to launch new odysseygo processes.
 func newNetwork(
 	log logging.Logger,
 	newAPIClientF api.NewAPIClientF,
@@ -299,12 +299,12 @@ func newNetwork(
 ) (*localNetwork, error) {
 	var err error
 	if rootDir == "" {
-		anrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
-		err = os.MkdirAll(anrRootDir, os.ModePerm)
+		onrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
+		err = os.MkdirAll(onrRootDir, os.ModePerm)
 		if err != nil {
 			return nil, err
 		}
-		networkRootDir := filepath.Join(anrRootDir, networkRootDirPrefix)
+		networkRootDir := filepath.Join(onrRootDir, networkRootDirPrefix)
 		rootDir, err = utils.MkDirWithTimestamp(networkRootDir)
 		if err != nil {
 			return nil, err
@@ -338,16 +338,16 @@ func newNetwork(
 // NewDefaultNetwork returns a new network using a pre-defined
 // network configuration.
 // The following addresses are pre-funded:
-// X-Chain Address 1:     X-custom18jma8ppw3nhx5r4ap8clazz0dps7rv5u9xde7p
-// X-Chain Address 1 Key: PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN
-// X-Chain Address 2:     X-custom16045mxr3s2cjycqe2xfluk304xv3ezhkhsvkpr
-// X-Chain Address 2 Key: PrivateKey-2fzYBh3bbWemKxQmMfX6DSuL2BFmDSLQWTvma57xwjQjtf8gFq
-// P-Chain Address 1:     P-custom18jma8ppw3nhx5r4ap8clazz0dps7rv5u9xde7p
-// P-Chain Address 1 Key: PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN
-// P-Chain Address 2:     P-custom16045mxr3s2cjycqe2xfluk304xv3ezhkhsvkpr
-// P-Chain Address 2 Key: PrivateKey-2fzYBh3bbWemKxQmMfX6DSuL2BFmDSLQWTvma57xwjQjtf8gFq
-// C-Chain Address:       0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
-// C-Chain Address Key:   56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027
+// A-Chain Address 1:     A-custom18jma8ppw3nhx5r4ap8clazz0dps7rv5u9xde7p
+// A-Chain Address 1 Key: PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN
+// A-Chain Address 2:     A-custom16045mxr3s2cjycqe2xfluk304xv3ezhkhsvkpr
+// A-Chain Address 2 Key: PrivateKey-2fzYBh3bbWemKxQmMfX6DSuL2BFmDSLQWTvma57xwjQjtf8gFq
+// O-Chain Address 1:     O-custom18jma8ppw3nhx5r4ap8clazz0dps7rv5u9xde7p
+// O-Chain Address 1 Key: PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN
+// O-Chain Address 2:     O-custom16045mxr3s2cjycqe2xfluk304xv3ezhkhsvkpr
+// O-Chain Address 2 Key: PrivateKey-2fzYBh3bbWemKxQmMfX6DSuL2BFmDSLQWTvma57xwjQjtf8gFq
+// D-Chain Address:       0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
+// D-Chain Address Key:   56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027
 // The following nodes are validators:
 // * NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg
 // * NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ
@@ -586,7 +586,7 @@ func (ln *localNetwork) addNode(nodeConfig node.Config) (node.Node, error) {
 		return nil, fmt.Errorf("couldn't get node ID: %w", err)
 	}
 
-	// Start the AvalancheGo node and pass it the flags defined above
+	// Start the OdysseyGo node and pass it the flags defined above
 	nodeProcess, err := ln.nodeProcessCreator.NewNodeProcess(nodeConfig, nodeData.args...)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -807,9 +807,9 @@ func (ln *localNetwork) removeNode(ctx context.Context, nodeName string) error {
 	delete(ln.nodes, nodeName)
 
 	if !paused {
-		// cchain eth api uses a websocket connection and must be closed before stopping the node,
+		// dchain eth api uses a websocket connection and must be closed before stopping the node,
 		// to avoid errors logs at client
-		node.client.CChainEthAPI().Close()
+		node.client.DChainEthAPI().Close()
 		if exitCode := node.process.Stop(ctx); exitCode != 0 {
 			return fmt.Errorf("node %q exited with exit code: %d", nodeName, exitCode)
 		}
@@ -837,9 +837,9 @@ func (ln *localNetwork) pauseNode(ctx context.Context, nodeName string) error {
 	if node.paused {
 		return fmt.Errorf("node has been paused already")
 	}
-	// cchain eth api uses a websocket connection and must be closed before stopping the node,
+	// dchain eth api uses a websocket connection and must be closed before stopping the node,
 	// to avoid errors logs at client
-	node.client.CChainEthAPI().Close()
+	node.client.DChainEthAPI().Close()
 	if exitCode := node.process.Stop(ctx); exitCode != 0 {
 		return fmt.Errorf("node %q exited with exit code: %d", nodeName, exitCode)
 	}
@@ -1024,7 +1024,7 @@ type buildArgsReturn struct {
 }
 
 // buildArgs returns the:
-// 1) Args for avago execution
+// 1) Args for odygo execution
 // 2) API port
 // 3) P2P port
 // of the node being added with config [nodeConfig], config file [configFile],
@@ -1079,7 +1079,7 @@ func (ln *localNetwork) buildArgs(
 		return buildArgsReturn{}, err
 	}
 
-	// Flags for AvalancheGo
+	// Flags for OdysseyGo
 	flags := map[string]string{
 		config.NetworkNameKey:  fmt.Sprintf("%d", ln.networkID),
 		config.DataDirKey:      dataDir,
@@ -1119,8 +1119,8 @@ func (ln *localNetwork) buildArgs(
 		flags[flagName] = fmt.Sprintf("%v", flagVal)
 	}
 
-	// map input flags to the corresponding avago version, making sure that latest flags don't break
-	// old avago versions
+	// map input flags to the corresponding odygo version, making sure that latest flags don't break
+	// old odygo versions
 	flagsForAvagoVersion := getFlagsForAvagoVersion(nodeSemVer, flags)
 
 	// create args
@@ -1141,7 +1141,7 @@ func (ln *localNetwork) buildArgs(
 	}, nil
 }
 
-// Get AvalancheGo version
+// Get OdysseyGo version
 func (ln *localNetwork) getNodeSemVer(nodeConfig node.Config) (string, error) {
 	nodeVersionOutput, err := ln.nodeProcessCreator.GetNodeVersion(nodeConfig)
 	if err != nil {
@@ -1162,11 +1162,11 @@ func (ln *localNetwork) getNodeSemVer(nodeConfig node.Config) (string, error) {
 	return nodeSemVer, nil
 }
 
-// ensure flags are compatible with the running avalanchego version
-func getFlagsForAvagoVersion(avagoVersion string, givenFlags map[string]string) map[string]string {
+// ensure flags are compatible with the running odysseygo version
+func getFlagsForAvagoVersion(odygoVersion string, givenFlags map[string]string) map[string]string {
 	flags := maps.Clone(givenFlags)
 	for _, deprecatedFlagInfo := range deprecatedFlagsSupport {
-		if semver.Compare(avagoVersion, deprecatedFlagInfo.Version) < 0 {
+		if semver.Compare(odygoVersion, deprecatedFlagInfo.Version) < 0 {
 			if v, ok := flags[deprecatedFlagInfo.NewName]; ok {
 				if v != "" {
 					if deprecatedFlagInfo.ValueMap == "parent-dir" {

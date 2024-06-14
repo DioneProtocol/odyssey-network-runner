@@ -11,16 +11,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ava-labs/avalanche-network-runner/network/node"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/network/peer"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/wrappers"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node"
+	"github.com/DioneProtocol/odysseygo/ids"
+	"github.com/DioneProtocol/odysseygo/message"
+	"github.com/DioneProtocol/odysseygo/network/peer"
+	"github.com/DioneProtocol/odysseygo/staking"
+	"github.com/DioneProtocol/odysseygo/utils/constants"
+	"github.com/DioneProtocol/odysseygo/utils/ips"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
+	"github.com/DioneProtocol/odysseygo/utils/wrappers"
+	"github.com/DioneProtocol/odysseygo/version"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 )
@@ -152,7 +152,7 @@ func readMessage(nodeConn net.Conn, errCh chan error) (*bytes.Buffer, error) {
 	return msgBytes, nil
 }
 
-// sendMessage sends a protocol message to the avalanchego peer
+// sendMessage sends a protocol message to the odysseygo peer
 func sendMessage(nodeConn net.Conn, msgBytes []byte, errCh chan error) error {
 	// buffer for message length
 	msgLenBytes := make([]byte, wrappers.IntLen)
@@ -229,7 +229,7 @@ func TestAttachPeer(t *testing.T) {
 	preferredID := ids.GenerateTestID()
 	acceptedID := ids.GenerateTestID()
 	requestID := uint32(42)
-	chainID := constants.PlatformChainID
+	chainID := constants.OmegaChainID
 	// create the Chits message
 	msg, err := mc.Chits(chainID, requestID, preferredID, acceptedID)
 	require.NoError(err)

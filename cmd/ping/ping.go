@@ -7,10 +7,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/ava-labs/avalanche-network-runner/client"
-	"github.com/ava-labs/avalanche-network-runner/utils/constants"
-	"github.com/ava-labs/avalanche-network-runner/ux"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/DioneProtocol/odyssey-network-runner/client"
+	"github.com/DioneProtocol/odyssey-network-runner/utils/constants"
+	"github.com/DioneProtocol/odyssey-network-runner/ux"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 	"github.com/spf13/cobra"
 )
 

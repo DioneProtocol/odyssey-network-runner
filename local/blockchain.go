@@ -14,31 +14,31 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ava-labs/avalanchego/vms/platformvm/reward"
+	"github.com/DioneProtocol/odysseygo/vms/omegavm/reward"
 
-	"github.com/ava-labs/avalanchego/vms/avm"
-	"github.com/ava-labs/avalanchego/vms/components/avax"
-	"github.com/ava-labs/avalanchego/vms/components/verify"
-	"github.com/ava-labs/avalanchego/wallet/chain/x"
+	"github.com/DioneProtocol/odysseygo/vms/alpha"
+	"github.com/DioneProtocol/odysseygo/vms/components/dione"
+	"github.com/DioneProtocol/odysseygo/vms/components/verify"
+	"github.com/DioneProtocol/odysseygo/wallet/chain/a"
 
-	"github.com/ava-labs/avalanche-network-runner/network"
-	"github.com/ava-labs/avalanche-network-runner/network/node"
-	"github.com/ava-labs/avalanche-network-runner/utils"
-	"github.com/ava-labs/avalanchego/api/admin"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/crypto/bls"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
-	"github.com/ava-labs/avalanchego/vms/platformvm/signer"
-	"github.com/ava-labs/avalanchego/vms/platformvm/txs"
-	"github.com/ava-labs/avalanchego/vms/secp256k1fx"
-	"github.com/ava-labs/avalanchego/wallet/chain/p"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary"
-	"github.com/ava-labs/avalanchego/wallet/subnet/primary/common"
+	"github.com/DioneProtocol/odyssey-network-runner/network"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node"
+	"github.com/DioneProtocol/odyssey-network-runner/utils"
+	"github.com/DioneProtocol/odysseygo/api/admin"
+	"github.com/DioneProtocol/odysseygo/config"
+	"github.com/DioneProtocol/odysseygo/genesis"
+	"github.com/DioneProtocol/odysseygo/ids"
+	"github.com/DioneProtocol/odysseygo/utils/constants"
+	"github.com/DioneProtocol/odysseygo/utils/crypto/bls"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
+	"github.com/DioneProtocol/odysseygo/utils/set"
+	"github.com/DioneProtocol/odysseygo/vms/omegavm"
+	"github.com/DioneProtocol/odysseygo/vms/omegavm/signer"
+	"github.com/DioneProtocol/odysseygo/vms/omegavm/txs"
+	"github.com/DioneProtocol/odysseygo/vms/secp256k1fx"
+	"github.com/DioneProtocol/odysseygo/wallet/chain/o"
+	"github.com/DioneProtocol/odysseygo/wallet/subnet/primary"
+	"github.com/DioneProtocol/odysseygo/wallet/subnet/primary/common"
 	"go.uber.org/zap"
 	"golang.org/x/exp/maps"
 )
@@ -208,7 +208,7 @@ func (ln *localNetwork) installCustomChains(
 	if err != nil {
 		return nil, err
 	}
-	platformCli := platformvm.NewClient(clientURI)
+	omegaCli := omegavm.NewClient(clientURI)
 
 	// wallet needs txs for all previously created subnets
 	var preloadTXs []ids.ID
@@ -272,7 +272,7 @@ func (ln *localNetwork) installCustomChains(
 	}
 
 	// just ensure all nodes are primary validators (so can be subnet validators)
-	if err := ln.addPrimaryValidators(ctx, platformCli, w); err != nil {
+	if err := ln.addPrimaryValidators(ctx, omegaCli, w); err != nil {
 		return nil, err
 	}
 
@@ -297,11 +297,11 @@ func (ln *localNetwork) installCustomChains(
 	}
 
 	// wait for nodes to be primary validators before trying to add them as subnet ones
-	if err = ln.waitPrimaryValidators(ctx, platformCli); err != nil {
+	if err = ln.waitPrimaryValidators(ctx, omegaCli); err != nil {
 		return nil, err
 	}
 
-	if err = ln.addSubnetValidators(ctx, platformCli, w, subnetIDs, subnetSpecs); err != nil {
+	if err = ln.addSubnetValidators(ctx, omegaCli, w, subnetIDs, subnetSpecs); err != nil {
 		return nil, err
 	}
 
@@ -333,7 +333,7 @@ func (ln *localNetwork) installCustomChains(
 		return nil, err
 	}
 
-	if err = ln.waitSubnetValidators(ctx, platformCli, subnetIDs, subnetSpecs); err != nil {
+	if err = ln.waitSubnetValidators(ctx, omegaCli, subnetIDs, subnetSpecs); err != nil {
 		return nil, err
 	}
 
@@ -376,7 +376,7 @@ func (ln *localNetwork) installSubnets(
 	if err != nil {
 		return nil, err
 	}
-	platformCli := platformvm.NewClient(clientURI)
+	omegaCli := omegavm.NewClient(clientURI)
 
 	w, err := newWallet(ctx, clientURI, []ids.ID{})
 	if err != nil {
@@ -409,7 +409,7 @@ func (ln *localNetwork) installSubnets(
 	}
 
 	// just ensure all nodes are primary validators (so can be subnet validators)
-	if err := ln.addPrimaryValidators(ctx, platformCli, w); err != nil {
+	if err := ln.addPrimaryValidators(ctx, omegaCli, w); err != nil {
 		return nil, err
 	}
 
@@ -423,11 +423,11 @@ func (ln *localNetwork) installSubnets(
 	}
 
 	// wait for nodes to be primary validators before trying to add them as subnet ones
-	if err = ln.waitPrimaryValidators(ctx, platformCli); err != nil {
+	if err = ln.waitPrimaryValidators(ctx, omegaCli); err != nil {
 		return nil, err
 	}
 
-	if err = ln.addSubnetValidators(ctx, platformCli, w, subnetIDs, subnetSpecs); err != nil {
+	if err = ln.addSubnetValidators(ctx, omegaCli, w, subnetIDs, subnetSpecs); err != nil {
 		return nil, err
 	}
 
@@ -435,7 +435,7 @@ func (ln *localNetwork) installSubnets(
 		return nil, err
 	}
 
-	if err = ln.waitSubnetValidators(ctx, platformCli, subnetIDs, subnetSpecs); err != nil {
+	if err = ln.waitSubnetValidators(ctx, omegaCli, subnetIDs, subnetSpecs); err != nil {
 		return nil, err
 	}
 
@@ -450,10 +450,10 @@ func (ln *localNetwork) getSubnetValidatorsNodenames(
 	if err != nil {
 		return nil, err
 	}
-	platformCli := platformvm.NewClient(clientURI)
+	omegaCli := omegavm.NewClient(clientURI)
 
 	cctx, cancel := createDefaultCtx(ctx)
-	vs, err := platformCli.GetCurrentValidators(cctx, subnetID, nil)
+	vs, err := omegaCli.GetCurrentValidators(cctx, subnetID, nil)
 	cancel()
 	if err != nil {
 		return nil, err
@@ -636,11 +636,11 @@ func (ln *localNetwork) restartNodes(
 
 type wallet struct {
 	addr     ids.ShortID
-	pWallet  p.Wallet
-	pBackend p.Backend
-	pBuilder p.Builder
-	pSigner  p.Signer
-	xWallet  x.Wallet
+	oWallet  o.Wallet
+	oBackend o.Backend
+	oBuilder o.Builder
+	oSigner  o.Signer
+	aWallet  a.Wallet
 }
 
 func newWallet(
@@ -649,15 +649,15 @@ func newWallet(
 	preloadTXs []ids.ID,
 ) (*wallet, error) {
 	kc := secp256k1fx.NewKeychain(genesis.EWOQKey)
-	primaryAVAXState, err := primary.FetchState(ctx, uri, kc.Addresses())
+	primaryDIONEState, err := primary.FetchState(ctx, uri, kc.Addresses())
 	if err != nil {
 		return nil, err
 	}
-	pCTX, xCTX, utxos := primaryAVAXState.PCTX, primaryAVAXState.XCTX, primaryAVAXState.UTXOs
-	pClient := platformvm.NewClient(uri)
-	pTXs := make(map[ids.ID]*txs.Tx)
+	oCTX, aCTX, utxos := primaryDIONEState.OCTX, primaryDIONEState.ACTX, primaryDIONEState.UTXOs
+	oClient := omegavm.NewClient(uri)
+	oTXs := make(map[ids.ID]*txs.Tx)
 	for _, id := range preloadTXs {
-		txBytes, err := pClient.GetTx(ctx, id)
+		txBytes, err := oClient.GetTx(ctx, id)
 		if err != nil {
 			return nil, err
 		}
@@ -665,43 +665,42 @@ func newWallet(
 		if err != nil {
 			return nil, err
 		}
-		pTXs[id] = tx
+		oTXs[id] = tx
 	}
-	pUTXOs := primary.NewChainUTXOs(constants.PlatformChainID, utxos)
-	xChainID := xCTX.BlockchainID()
-	xUTXOs := primary.NewChainUTXOs(xChainID, utxos)
+	oUTXOs := primary.NewChainUTXOs(constants.OmegaChainID, utxos)
+	aChainID := aCTX.BlockchainID()
+	aUTXOs := primary.NewChainUTXOs(aChainID, utxos)
 	var w wallet
 	w.addr = genesis.EWOQKey.PublicKey().Address()
-	w.pBackend = p.NewBackend(pCTX, pUTXOs, pTXs)
-	w.pBuilder = p.NewBuilder(kc.Addresses(), w.pBackend)
-	w.pSigner = p.NewSigner(kc, w.pBackend)
-	w.pWallet = p.NewWallet(w.pBuilder, w.pSigner, pClient, w.pBackend)
+	w.oBackend = o.NewBackend(oCTX, oUTXOs, oTXs)
+	w.oBuilder = o.NewBuilder(kc.Addresses(), w.oBackend)
+	w.oSigner = o.NewSigner(kc, w.oBackend)
+	w.oWallet = o.NewWallet(w.oBuilder, w.oSigner, oClient, w.oBackend)
 
-	xBackend := x.NewBackend(xCTX, xUTXOs)
-	xBuilder := x.NewBuilder(kc.Addresses(), xBackend)
-	xSigner := x.NewSigner(kc, xBackend)
-	xClient := avm.NewClient(uri, "X")
-	w.xWallet = x.NewWallet(xBuilder, xSigner, xClient, xBackend)
+	aBackend := a.NewBackend(aCTX, aUTXOs)
+	aBuilder := a.NewBuilder(kc.Addresses(), aBackend)
+	aSigner := a.NewSigner(kc, aBackend)
+	aClient := alpha.NewClient(uri, "A")
+	w.aWallet = a.NewWallet(aBuilder, aSigner, aClient, aBackend)
 	return &w, nil
 }
 
 func (w *wallet) reload(uri string) {
-	pClient := platformvm.NewClient(uri)
-	w.pWallet = p.NewWallet(w.pBuilder, w.pSigner, pClient, w.pBackend)
+	oClient := omegavm.NewClient(uri)
+	w.oWallet = o.NewWallet(w.oBuilder, w.oSigner, oClient, w.oBackend)
 }
 
 // add all nodes as validators of the primary network, in case they are not
 // the validation starts as soon as possible and its duration is as long as possible, that is,
-// it is set to max accepted duration by avalanchego
+// it is set to max accepted duration by odysseygo
 func (ln *localNetwork) addPrimaryValidators(
 	ctx context.Context,
-	platformCli platformvm.Client,
+	omegaCli omegavm.Client,
 	w *wallet,
 ) error {
 	ln.log.Info(logging.Green.Wrap("adding the nodes as primary network validators"))
-	// ref. https://docs.avax.network/build/avalanchego-apis/p-chain/#platformgetcurrentvalidators
 	cctx, cancel := createDefaultCtx(ctx)
-	vdrs, err := platformCli.GetCurrentValidators(cctx, constants.PrimaryNetworkID, nil)
+	vdrs, err := omegaCli.GetCurrentValidators(cctx, constants.PrimaryNetworkID, nil)
 	cancel()
 	if err != nil {
 		return err
@@ -730,7 +729,7 @@ func (ln *localNetwork) addPrimaryValidators(
 		}
 		proofOfPossession := signer.NewProofOfPossession(blsSk)
 		cctx, cancel = createDefaultCtx(ctx)
-		txID, err := w.pWallet.IssueAddPermissionlessValidatorTx(
+		txID, err := w.oWallet.IssueAddPermissionlessValidatorTx(
 			&txs.SubnetValidator{
 				Validator: txs.Validator{
 					NodeID: nodeID,
@@ -741,7 +740,7 @@ func (ln *localNetwork) addPrimaryValidators(
 				Subnet: ids.Empty,
 			},
 			proofOfPossession,
-			w.pWallet.AVAXAssetID(),
+			w.oWallet.DIONEAssetID(),
 			&secp256k1fx.OutputOwners{
 				Threshold: 1,
 				Addrs:     []ids.ShortID{w.addr},
@@ -755,14 +754,14 @@ func (ln *localNetwork) addPrimaryValidators(
 		)
 		cancel()
 		if err != nil {
-			return fmt.Errorf("P-Wallet Tx Error %s %w, node ID %s", "IssueAddPermissionlessValidatorTx", err, nodeID.String())
+			return fmt.Errorf("O-Wallet Tx Error %s %w, node ID %s", "IssueAddPermissionlessValidatorTx", err, nodeID.String())
 		}
 		ln.log.Info("added node as primary subnet validator", zap.String("node-name", nodeName), zap.String("node-ID", nodeID.String()), zap.String("tx-ID", txID.ID().String()))
 	}
 	return nil
 }
 
-func getXChainAssetID(ctx context.Context, w *wallet, tokenName string, tokenSymbol string, maxSupply uint64) (ids.ID, error) {
+func getAChainAssetID(ctx context.Context, w *wallet, tokenName string, tokenSymbol string, maxSupply uint64) (ids.ID, error) {
 	owner := &secp256k1fx.OutputOwners{
 		Threshold: 1,
 		Addrs: []ids.ShortID{
@@ -771,7 +770,7 @@ func getXChainAssetID(ctx context.Context, w *wallet, tokenName string, tokenSym
 	}
 	cctx, cancel := createDefaultCtx(ctx)
 	defer cancel()
-	tx, err := w.xWallet.IssueCreateAssetTx(
+	tx, err := w.aWallet.IssueCreateAssetTx(
 		tokenName,
 		tokenSymbol,
 		9, // denomination for UI purposes only in explorer
@@ -792,14 +791,14 @@ func getXChainAssetID(ctx context.Context, w *wallet, tokenName string, tokenSym
 	return tx.ID(), nil
 }
 
-func exportXChainToPChain(ctx context.Context, w *wallet, owner *secp256k1fx.OutputOwners, subnetAssetID ids.ID, assetAmount uint64) error {
+func exportAChainToOChain(ctx context.Context, w *wallet, owner *secp256k1fx.OutputOwners, subnetAssetID ids.ID, assetAmount uint64) error {
 	cctx, cancel := createDefaultCtx(ctx)
 	defer cancel()
-	_, err := w.xWallet.IssueExportTx(
+	_, err := w.aWallet.IssueExportTx(
 		ids.Empty,
-		[]*avax.TransferableOutput{
+		[]*dione.TransferableOutput{
 			{
-				Asset: avax.Asset{
+				Asset: dione.Asset{
 					ID: subnetAssetID,
 				},
 				Out: &secp256k1fx.TransferOutput{
@@ -814,14 +813,14 @@ func exportXChainToPChain(ctx context.Context, w *wallet, owner *secp256k1fx.Out
 	return err
 }
 
-func importPChainFromXChain(ctx context.Context, w *wallet, owner *secp256k1fx.OutputOwners) error {
-	xWallet := w.xWallet
-	pWallet := w.pWallet
+func importOChainFromAChain(ctx context.Context, w *wallet, owner *secp256k1fx.OutputOwners) error {
+	aWallet := w.aWallet
+	oWallet := w.oWallet
 	cctx, cancel := createDefaultCtx(ctx)
 	defer cancel()
-	xChainID := xWallet.BlockchainID()
-	_, err := pWallet.IssueImportTx(
-		xChainID,
+	aChainID := aWallet.BlockchainID()
+	_, err := oWallet.IssueImportTx(
+		aChainID,
 		owner,
 		common.WithContext(cctx),
 		defaultPoll,
@@ -839,7 +838,7 @@ func (ln *localNetwork) removeSubnetValidators(
 	if err != nil {
 		return err
 	}
-	platformCli := platformvm.NewClient(clientURI)
+	omegaCli := omegavm.NewClient(clientURI)
 	// wallet needs txs for all previously created subnets
 	preloadTXs := make([]ids.ID, len(removeSubnetSpecs))
 	for i, removeSubnetSpec := range removeSubnetSpecs {
@@ -860,7 +859,7 @@ func (ln *localNetwork) removeSubnetValidators(
 			return err
 		}
 		cctx, cancel := createDefaultCtx(ctx)
-		vs, err := platformCli.GetCurrentValidators(cctx, subnetID, nil)
+		vs, err := omegaCli.GetCurrentValidators(cctx, subnetID, nil)
 		cancel()
 		if err != nil {
 			return err
@@ -880,7 +879,7 @@ func (ln *localNetwork) removeSubnetValidators(
 				return fmt.Errorf("node %s is currently not a subnet validator of subnet %s", nodeName, subnetID.String())
 			}
 			cctx, cancel := createDefaultCtx(ctx)
-			txID, err := w.pWallet.IssueRemoveSubnetValidatorTx(
+			txID, err := w.oWallet.IssueRemoveSubnetValidatorTx(
 				nodeID,
 				subnetID,
 				common.WithContext(cctx),
@@ -888,7 +887,7 @@ func (ln *localNetwork) removeSubnetValidators(
 			)
 			cancel()
 			if err != nil {
-				return fmt.Errorf("P-Wallet Tx Error %s %w, node ID %s, subnetID %s", "IssueRemoveSubnetValidatorTx", err, nodeID.String(), subnetID.String())
+				return fmt.Errorf("O-Wallet Tx Error %s %w, node ID %s, subnetID %s", "IssueRemoveSubnetValidatorTx", err, nodeID.String(), subnetID.String())
 			}
 			ln.log.Info("removed node as subnet validator",
 				zap.String("node-name", nodeName),
@@ -911,7 +910,7 @@ func (ln *localNetwork) addPermissionlessValidators(
 	if err != nil {
 		return err
 	}
-	platformCli := platformvm.NewClient(clientURI)
+	omegaCli := omegavm.NewClient(clientURI)
 	// wallet needs txs for all previously created subnets
 	preloadTXs := make([]ids.ID, len(validatorSpecs))
 	for i, validatorSpec := range validatorSpecs {
@@ -946,17 +945,17 @@ func (ln *localNetwork) addPermissionlessValidators(
 	}
 
 	// just ensure all nodes are primary validators (so can be subnet validators)
-	if err := ln.addPrimaryValidators(ctx, platformCli, w); err != nil {
+	if err := ln.addPrimaryValidators(ctx, omegaCli, w); err != nil {
 		return err
 	}
 
 	// wait for nodes to be primary validators before trying to add them as subnet ones
-	if err = ln.waitPrimaryValidators(ctx, platformCli); err != nil {
+	if err = ln.waitPrimaryValidators(ctx, omegaCli); err != nil {
 		return err
 	}
 
 	cctx, cancel := createDefaultCtx(ctx)
-	vs, err := platformCli.GetCurrentValidators(cctx, constants.PrimaryNetworkID, nil)
+	vs, err := omegaCli.GetCurrentValidators(cctx, constants.PrimaryNetworkID, nil)
 	cancel()
 	if err != nil {
 		return err
@@ -991,7 +990,7 @@ func (ln *localNetwork) addPermissionlessValidators(
 		} else {
 			endTime = uint64(validatorSpec.StartTime.Add(validatorSpec.StakeDuration).Unix())
 		}
-		txID, err := w.pWallet.IssueAddPermissionlessValidatorTx(
+		txID, err := w.oWallet.IssueAddPermissionlessValidatorTx(
 			&txs.SubnetValidator{
 				Validator: txs.Validator{
 					NodeID: validatorNodeID,
@@ -1050,7 +1049,7 @@ func (ln *localNetwork) transformToElasticSubnets(
 	for i, elasticSubnetSpec := range elasticSubnetSpecs {
 		ln.log.Info(logging.Green.Wrap("transforming elastic subnet"), zap.String("subnet ID", *elasticSubnetSpec.SubnetID))
 
-		subnetAssetID, err := getXChainAssetID(ctx, w, elasticSubnetSpec.AssetName, elasticSubnetSpec.AssetSymbol, elasticSubnetSpec.MaxSupply)
+		subnetAssetID, err := getAChainAssetID(ctx, w, elasticSubnetSpec.AssetName, elasticSubnetSpec.AssetSymbol, elasticSubnetSpec.MaxSupply)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1062,22 +1061,22 @@ func (ln *localNetwork) transformToElasticSubnets(
 				w.addr,
 			},
 		}
-		err = exportXChainToPChain(ctx, w, owner, subnetAssetID, elasticSubnetSpec.MaxSupply)
+		err = exportAChainToOChain(ctx, w, owner, subnetAssetID, elasticSubnetSpec.MaxSupply)
 		if err != nil {
 			return nil, nil, err
 		}
-		ln.log.Info("exported asset to P-Chain")
-		err = importPChainFromXChain(ctx, w, owner)
+		ln.log.Info("exported asset to O-Chain")
+		err = importOChainFromAChain(ctx, w, owner)
 		if err != nil {
 			return nil, nil, err
 		}
-		ln.log.Info("imported asset from X-Chain")
+		ln.log.Info("imported asset from A-Chain")
 		subnetID, err := ids.FromString(*elasticSubnetSpec.SubnetID)
 		if err != nil {
 			return nil, nil, err
 		}
 		cctx, cancel := createDefaultCtx(ctx)
-		transformSubnetTxID, err := w.pWallet.IssueTransformSubnetTx(subnetID, subnetAssetID,
+		transformSubnetTxID, err := w.oWallet.IssueTransformSubnetTx(subnetID, subnetAssetID,
 			elasticSubnetSpec.InitialSupply, elasticSubnetSpec.MaxSupply, elasticSubnetSpec.MinConsumptionRate,
 			elasticSubnetSpec.MaxConsumptionRate, elasticSubnetSpec.MinValidatorStake, elasticSubnetSpec.MaxValidatorStake,
 			elasticSubnetSpec.MinValidatorStakeDuration, elasticSubnetSpec.MaxValidatorStakeDuration,
@@ -1116,7 +1115,7 @@ func createSubnets(
 	for i := uint32(0); i < numSubnets; i++ {
 		log.Info("creating subnet tx")
 		cctx, cancel := createDefaultCtx(ctx)
-		subnetID, err := w.pWallet.IssueCreateSubnetTx(
+		subnetID, err := w.oWallet.IssueCreateSubnetTx(
 			&secp256k1fx.OutputOwners{
 				Threshold: 1,
 				Addrs:     []ids.ShortID{w.addr},
@@ -1126,7 +1125,7 @@ func createSubnets(
 		)
 		cancel()
 		if err != nil {
-			return nil, fmt.Errorf("P-Wallet Tx Error %s %w", "IssueCreateSubnetTx", err)
+			return nil, fmt.Errorf("O-Wallet Tx Error %s %w", "IssueCreateSubnetTx", err)
 		}
 		log.Info("created subnet tx", zap.String("subnet-ID", subnetID.ID().String()))
 		subnetIDs[i] = subnetID.ID()
@@ -1139,7 +1138,7 @@ func createSubnets(
 // it ends at the time the primary network validation ends for the node
 func (ln *localNetwork) addSubnetValidators(
 	ctx context.Context,
-	platformCli platformvm.Client,
+	omegaCli omegavm.Client,
 	w *wallet,
 	subnetIDs []ids.ID,
 	subnetSpecs []network.SubnetSpec,
@@ -1147,7 +1146,7 @@ func (ln *localNetwork) addSubnetValidators(
 	ln.log.Info(logging.Green.Wrap("adding the nodes as subnet validators"))
 	for i, subnetID := range subnetIDs {
 		cctx, cancel := createDefaultCtx(ctx)
-		vs, err := platformCli.GetCurrentValidators(cctx, constants.PrimaryNetworkID, nil)
+		vs, err := omegaCli.GetCurrentValidators(cctx, constants.PrimaryNetworkID, nil)
 		cancel()
 		if err != nil {
 			return err
@@ -1157,7 +1156,7 @@ func (ln *localNetwork) addSubnetValidators(
 			primaryValidatorsEndtime[v.NodeID] = time.Unix(int64(v.EndTime), 0)
 		}
 		cctx, cancel = createDefaultCtx(ctx)
-		vs, err = platformCli.GetCurrentValidators(cctx, subnetID, nil)
+		vs, err = omegaCli.GetCurrentValidators(cctx, subnetID, nil)
 		cancel()
 		if err != nil {
 			return err
@@ -1177,7 +1176,7 @@ func (ln *localNetwork) addSubnetValidators(
 				continue
 			}
 			cctx, cancel := createDefaultCtx(ctx)
-			txID, err := w.pWallet.IssueAddSubnetValidatorTx(
+			txID, err := w.oWallet.IssueAddSubnetValidatorTx(
 				&txs.SubnetValidator{
 					Validator: txs.Validator{
 						NodeID: nodeID,
@@ -1193,7 +1192,7 @@ func (ln *localNetwork) addSubnetValidators(
 			)
 			cancel()
 			if err != nil {
-				return fmt.Errorf("P-Wallet Tx Error %s %w, node ID %s, subnetID %s", "IssueAddSubnetValidatorTx", err, nodeID.String(), subnetID.String())
+				return fmt.Errorf("O-Wallet Tx Error %s %w, node ID %s, subnetID %s", "IssueAddSubnetValidatorTx", err, nodeID.String(), subnetID.String())
 			}
 			ln.log.Info("added node as a subnet validator to subnet",
 				zap.String("node-name", nodeName),
@@ -1209,13 +1208,13 @@ func (ln *localNetwork) addSubnetValidators(
 // waits until all nodes start validating the primary network
 func (ln *localNetwork) waitPrimaryValidators(
 	ctx context.Context,
-	platformCli platformvm.Client,
+	omegaCli omegavm.Client,
 ) error {
 	ln.log.Info(logging.Green.Wrap("waiting for the nodes to become primary validators"))
 	for {
 		ready := true
 		cctx, cancel := createDefaultCtx(ctx)
-		vs, err := platformCli.GetCurrentValidators(cctx, constants.PrimaryNetworkID, nil)
+		vs, err := omegaCli.GetCurrentValidators(cctx, constants.PrimaryNetworkID, nil)
 		cancel()
 		if err != nil {
 			return err
@@ -1246,7 +1245,7 @@ func (ln *localNetwork) waitPrimaryValidators(
 // waits until all subnet participants start validating the subnetID, for all given subnets
 func (ln *localNetwork) waitSubnetValidators(
 	ctx context.Context,
-	platformCli platformvm.Client,
+	omegaCli omegavm.Client,
 	subnetIDs []ids.ID,
 	subnetSpecs []network.SubnetSpec,
 ) error {
@@ -1255,7 +1254,7 @@ func (ln *localNetwork) waitSubnetValidators(
 		ready := true
 		for i, subnetID := range subnetIDs {
 			cctx, cancel := createDefaultCtx(ctx)
-			vs, err := platformCli.GetCurrentValidators(cctx, subnetID, nil)
+			vs, err := omegaCli.GetCurrentValidators(cctx, subnetID, nil)
 			cancel()
 			if err != nil {
 				return err
@@ -1342,7 +1341,7 @@ func createBlockchainTxs(
 		if err != nil {
 			return nil, err
 		}
-		utx, err := w.pBuilder.NewCreateChainTx(
+		utx, err := w.oBuilder.NewCreateChainTx(
 			subnetID,
 			genesisBytes,
 			vmID,
@@ -1352,11 +1351,11 @@ func createBlockchainTxs(
 		if err != nil {
 			return nil, fmt.Errorf("failure generating create blockchain tx: %w", err)
 		}
-		tx, err := w.pSigner.SignUnsigned(cctx, utx)
+		tx, err := w.oSigner.SignUnsigned(cctx, utx)
 		if err != nil {
 			return nil, fmt.Errorf("failure signing create blockchain tx: %w", err)
 		}
-		err = w.pBackend.AcceptTx(cctx, tx)
+		err = w.oBackend.AcceptTx(cctx, tx)
 		if err != nil {
 			return nil, fmt.Errorf("failure accepting create blockchain tx UTXOs: %w", err)
 		}
@@ -1472,12 +1471,12 @@ func (*localNetwork) createBlockchains(
 		cctx, cancel := createDefaultCtx(ctx)
 		defer cancel()
 
-		if err := w.pWallet.IssueTx(
+		if err := w.oWallet.IssueTx(
 			blockchainTxs[i],
 			common.WithContext(cctx),
 			defaultPoll,
 		); err != nil {
-			return fmt.Errorf("P-Wallet Tx Error %s %w, blockchainID %s", "IssueCreateBlockchainTx", err, blockchainTxs[i].ID().String())
+			return fmt.Errorf("O-Wallet Tx Error %s %w, blockchainID %s", "IssueCreateBlockchainTx", err, blockchainTxs[i].ID().String())
 		}
 
 		log.Info("created a new blockchain",

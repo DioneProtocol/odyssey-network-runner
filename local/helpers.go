@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ava-labs/avalanche-network-runner/network/node"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node"
+	"github.com/DioneProtocol/odysseygo/config"
+	"github.com/DioneProtocol/odysseygo/utils/constants"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 	"go.uber.org/zap"
 )
 
@@ -227,7 +227,7 @@ func makeNodeDir(log logging.Logger, rootDir, nodeName string) (string, error) {
 	if rootDir == "" {
 		log.Warn("no network root directory defined; will create this node's runtime directory in working directory")
 	}
-	// [nodeRootDir] is where this node's config file, C-Chain config file,
+	// [nodeRootDir] is where this node's config file, D-Chain config file,
 	// staking key, staking certificate and genesis file will be written.
 	// (Other file locations are given in the node's config file.)
 	// TODO should we do this for other directories? Profiles?

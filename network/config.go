@@ -8,20 +8,20 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ava-labs/avalanche-network-runner/network/node"
-	"github.com/ava-labs/avalanche-network-runner/utils"
-	"github.com/ava-labs/avalanchego/genesis"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/formatting/address"
-	"github.com/ava-labs/avalanchego/utils/units"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node"
+	"github.com/DioneProtocol/odyssey-network-runner/utils"
+	"github.com/DioneProtocol/odysseygo/genesis"
+	"github.com/DioneProtocol/odysseygo/ids"
+	"github.com/DioneProtocol/odysseygo/utils/constants"
+	"github.com/DioneProtocol/odysseygo/utils/formatting/address"
+	"github.com/DioneProtocol/odysseygo/utils/units"
 	"golang.org/x/exp/maps"
 )
 
-var cChainConfig map[string]interface{}
+var dChainConfig map[string]interface{}
 
 const (
-	validatorStake = units.MegaAvax
+	validatorStake = units.MegaDione
 )
 
 func init() {
@@ -30,12 +30,12 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	cChainConfigStr, ok := genesisMap["cChainGenesis"].(string)
+	dChainConfigStr, ok := genesisMap["dChainGenesis"].(string)
 	if !ok {
-		panic(fmt.Errorf("expected cChainGenesis to be a string, but got %T", genesisMap["cChainGenesis"]))
+		panic(fmt.Errorf("expected dChainGenesis to be a string, but got %T", genesisMap["dChainGenesis"]))
 	}
-	cChainConfigBytes := []byte(cChainConfigStr)
-	err = json.Unmarshal(cChainConfigBytes, &cChainConfig)
+	dChainConfigBytes := []byte(dChainConfigStr)
+	err = json.Unmarshal(dChainConfigBytes, &dChainConfig)
 	if err != nil {
 		panic(err)
 	}
@@ -111,14 +111,14 @@ func (c *Config) Validate() error {
 
 // Return a genesis JSON where:
 // The nodes in [genesisVdrs] are validators.
-// The C-Chain and X-Chain balances are given by
-// [cChainBalances] and [xChainBalances].
+// The D-Chain and A-Chain balances are given by
+// [dChainBalances] and [aChainBalances].
 // Note that many of the genesis fields (i.e. reward addresses)
 // are randomly generated or hard-coded.
-func NewAvalancheGoGenesis(
+func NewOdysseyGoGenesis(
 	networkID uint32,
-	xChainBalances []AddrAndBalance,
-	cChainBalances []AddrAndBalance,
+	aChainBalances []AddrAndBalance,
+	dChainBalances []AddrAndBalance,
 	genesisVdrs []ids.NodeID,
 ) ([]byte, error) {
 	switch networkID {
@@ -128,13 +128,13 @@ func NewAvalancheGoGenesis(
 	switch {
 	case len(genesisVdrs) == 0:
 		return nil, errors.New("no genesis validators provided")
-	case len(xChainBalances)+len(cChainBalances) == 0:
+	case len(aChainBalances)+len(dChainBalances) == 0:
 		return nil, errors.New("no genesis balances given")
 	}
 
 	// Address that controls stake doesn't matter -- generate it randomly
 	genesisVdrStakeAddr, _ := address.Format(
-		"X",
+		"A",
 		constants.GetHRP(networkID),
 		ids.GenerateTestShortID().Bytes(),
 	)
@@ -143,7 +143,7 @@ func NewAvalancheGoGenesis(
 		Allocations: []genesis.UnparsedAllocation{
 			{
 				ETHAddr:       "0x0000000000000000000000000000000000000000",
-				AVAXAddr:      genesisVdrStakeAddr, // Owner doesn't matter
+				DIONEAddr:     genesisVdrStakeAddr, // Owner doesn't matter
 				InitialAmount: 0,
 				UnlockSchedule: []genesis.LockedAmount{ // Provides stake to validators
 					{
@@ -159,14 +159,14 @@ func NewAvalancheGoGenesis(
 		Message:                    "hello world",
 	}
 
-	for _, xChainBal := range xChainBalances {
-		xChainAddr, _ := address.Format("X", constants.GetHRP(networkID), xChainBal.Addr[:])
+	for _, aChainBal := range aChainBalances {
+		aChainAddr, _ := address.Format("A", constants.GetHRP(networkID), aChainBal.Addr[:])
 		config.Allocations = append(
 			config.Allocations,
 			genesis.UnparsedAllocation{
 				ETHAddr:       "0x0000000000000000000000000000000000000000",
-				AVAXAddr:      xChainAddr,
-				InitialAmount: xChainBal.Balance.Uint64(),
+				DIONEAddr:     aChainAddr,
+				InitialAmount: aChainBal.Balance.Uint64(),
 				UnlockSchedule: []genesis.LockedAmount{
 					{
 						Amount:   validatorStake * uint64(len(genesisVdrs)), // Stake
@@ -177,24 +177,24 @@ func NewAvalancheGoGenesis(
 		)
 	}
 
-	// Set initial C-Chain balances.
-	cChainAllocs := map[string]interface{}{}
-	for _, cChainBal := range cChainBalances {
-		addrHex := fmt.Sprintf("0x%s", cChainBal.Addr.Hex())
-		balHex := fmt.Sprintf("0x%x", cChainBal.Balance)
-		cChainAllocs[addrHex] = map[string]interface{}{
+	// Set initial D-Chain balances.
+	dChainAllocs := map[string]interface{}{}
+	for _, dChainBal := range dChainBalances {
+		addrHex := fmt.Sprintf("0x%s", dChainBal.Addr.Hex())
+		balHex := fmt.Sprintf("0x%x", dChainBal.Balance)
+		dChainAllocs[addrHex] = map[string]interface{}{
 			"balance": balHex,
 		}
 	}
-	// avoid modifying original cChainConfig
-	localCChainConfig := maps.Clone(cChainConfig)
-	localCChainConfig["alloc"] = cChainAllocs
-	cChainConfigBytes, _ := json.Marshal(localCChainConfig)
-	config.CChainGenesis = string(cChainConfigBytes)
+	// avoid modifying original dChainConfig
+	localDChainConfig := maps.Clone(dChainConfig)
+	localDChainConfig["alloc"] = dChainAllocs
+	dChainConfigBytes, _ := json.Marshal(localDChainConfig)
+	config.DChainGenesis = string(dChainConfigBytes)
 
 	// Set initial validators.
 	// Give staking rewards to random address.
-	rewardAddr, _ := address.Format("X", constants.GetHRP(networkID), ids.GenerateTestShortID().Bytes())
+	rewardAddr, _ := address.Format("A", constants.GetHRP(networkID), ids.GenerateTestShortID().Bytes())
 	for _, genesisVdr := range genesisVdrs {
 		config.InitialStakers = append(
 			config.InitialStakers,
@@ -206,6 +206,6 @@ func NewAvalancheGoGenesis(
 		)
 	}
 
-	// TODO add validation (from AvalancheGo's function validateConfig?)
+	// TODO add validation (from OdysseyGo's function validateConfig?)
 	return json.Marshal(config)
 }

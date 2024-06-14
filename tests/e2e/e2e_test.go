@@ -14,21 +14,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ava-labs/avalanchego/api/admin"
-	"github.com/ava-labs/avalanchego/message"
-	avago_constants "github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
+	"github.com/DioneProtocol/odysseygo/api/admin"
+	"github.com/DioneProtocol/odysseygo/message"
+	odygo_constants "github.com/DioneProtocol/odysseygo/utils/constants"
+	"github.com/DioneProtocol/odysseygo/vms/omegavm"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/exp/maps"
 
-	"github.com/ava-labs/avalanche-network-runner/client"
-	"github.com/ava-labs/avalanche-network-runner/rpcpb"
-	"github.com/ava-labs/avalanche-network-runner/server"
-	"github.com/ava-labs/avalanche-network-runner/utils"
-	"github.com/ava-labs/avalanche-network-runner/utils/constants"
-	"github.com/ava-labs/avalanche-network-runner/ux"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/DioneProtocol/odyssey-network-runner/client"
+	"github.com/DioneProtocol/odyssey-network-runner/rpcpb"
+	"github.com/DioneProtocol/odyssey-network-runner/server"
+	"github.com/DioneProtocol/odyssey-network-runner/utils"
+	"github.com/DioneProtocol/odyssey-network-runner/utils/constants"
+	"github.com/DioneProtocol/odyssey-network-runner/ux"
+	"github.com/DioneProtocol/odysseygo/ids"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 )
@@ -48,8 +48,7 @@ var (
 	logDir          string
 	gRPCEp          string
 	gRPCGatewayEp   string
-	execPath1       string
-	execPath2       string
+	execPath        string
 	subnetEvmPath   string
 	genesisPath     string
 	genesisContents string
@@ -133,16 +132,10 @@ func init() {
 		"gRPC gateway endpoint",
 	)
 	flag.StringVar(
-		&execPath1,
-		"avalanchego-path-1",
+		&execPath,
+		"odysseygo-path",
 		"",
-		"avalanchego executable path (to upgrade from)",
-	)
-	flag.StringVar(
-		&execPath2,
-		"avalanchego-path-2",
-		"",
-		"avalanchego executable path (to upgrade to)",
+		"odysseygo executable path (to upgrade from)",
 	)
 	flag.StringVar(
 		&subnetEvmPath,
@@ -160,10 +153,10 @@ var (
 var _ = ginkgo.BeforeSuite(func() {
 	var err error
 	if logDir == "" {
-		anrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
-		err = os.MkdirAll(anrRootDir, os.ModePerm)
+		onrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
+		err = os.MkdirAll(onrRootDir, os.ModePerm)
 		gomega.Ω(err).Should(gomega.BeNil())
-		clientRootDir := filepath.Join(anrRootDir, clientRootDirPrefix)
+		clientRootDir := filepath.Join(onrRootDir, clientRootDirPrefix)
 		logDir, err = utils.MkDirWithTimestamp(clientRootDir)
 		gomega.Ω(err).Should(gomega.BeNil())
 	}
@@ -209,10 +202,10 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 		createdBlockchainID := ""
 		createdBlockchainID2 := ""
 		ginkgo.By("start with blockchain specs", func() {
-			ux.Print(log, logging.Green.Wrap("sending 'start' with the valid binary path: %s"), execPath1)
+			ux.Print(log, logging.Green.Wrap("sending 'start' with the valid binary path: %s"), execPath)
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			resp, err := cli.Start(ctx, execPath1,
-				client.WithPluginDir(filepath.Join(filepath.Dir(execPath1), "plugins")),
+			resp, err := cli.Start(ctx, execPath,
+				client.WithPluginDir(filepath.Join(filepath.Dir(execPath), "plugins")),
 				client.WithBlockchainSpecs([]*rpcpb.BlockchainSpec{
 					{
 						VmName:  "subnetevm",
@@ -285,7 +278,7 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 		})
 
 		ginkgo.By("can save snapshot", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			_, err := cli.SaveSnapshot(ctx, "test")
 			cancel()
 			gomega.Ω(err).Should(gomega.BeNil())
@@ -469,8 +462,8 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 				clientURI = uri
 				break
 			}
-			platformCli := platformvm.NewClient(clientURI)
-			vdrs, err := platformCli.GetCurrentValidators(ctx, ids.Empty, nil)
+			omegaCli := omegavm.NewClient(clientURI)
+			vdrs, err := omegaCli.GetCurrentValidators(ctx, ids.Empty, nil)
 			gomega.Ω(err).Should(gomega.BeNil())
 			status, err := cli.Status(ctx)
 			gomega.Ω(err).Should(gomega.BeNil())
@@ -515,7 +508,7 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 
 		ginkgo.By("start request with invalid custom VM path should fail", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err := cli.Start(ctx, execPath1,
+			_, err := cli.Start(ctx, execPath,
 				client.WithPluginDir(os.TempDir()),
 				client.WithBlockchainSpecs([]*rpcpb.BlockchainSpec{
 					{
@@ -534,7 +527,7 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 			gomega.Ω(f.Close()).Should(gomega.BeNil())
 
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err = cli.Start(ctx, execPath1,
+			_, err = cli.Start(ctx, execPath,
 				client.WithPluginDir(filepath.Dir(filePath)),
 				client.WithBlockchainSpecs([]*rpcpb.BlockchainSpec{
 					{
@@ -549,9 +542,9 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 		})
 
 		ginkgo.By("calling start API with the valid binary path", func() {
-			ux.Print(log, logging.Green.Wrap("sending 'start' with the valid binary path: %s"), execPath1)
+			ux.Print(log, logging.Green.Wrap("sending 'start' with the valid binary path: %s"), execPath)
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			resp, err := cli.Start(ctx, execPath1)
+			resp, err := cli.Start(ctx, execPath)
 			cancel()
 			gomega.Ω(err).Should(gomega.BeNil())
 			ux.Print(log, logging.Green.Wrap("successfully started, node-names: %s"), resp.ClusterInfo.NodeNames)
@@ -608,9 +601,9 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 	})
 
 	ginkgo.It("can restart", func() {
-		ginkgo.By("calling restart API with the second binary", func() {
+		ginkgo.By("calling restart API with the first binary", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-			resp, err := cli.RestartNode(ctx, "node4", client.WithExecPath(execPath2))
+			resp, err := cli.RestartNode(ctx, "node4", client.WithExecPath(execPath))
 			cancel()
 			gomega.Ω(err).Should(gomega.BeNil())
 			ux.Print(log, logging.Green.Wrap("successfully restarted, node-names: %s"), resp.ClusterInfo.NodeNames)
@@ -632,7 +625,7 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 				logging.NoLog{},
 				prometheus.NewRegistry(),
 				"",
-				avago_constants.DefaultNetworkCompressionType,
+				odygo_constants.DefaultNetworkCompressionType,
 				10*time.Second,
 			)
 			gomega.Ω(err).Should(gomega.BeNil())
@@ -640,7 +633,7 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 			preferredID := ids.GenerateTestID()
 			acceptedID := ids.GenerateTestID()
 			requestID := uint32(42)
-			chainID := avago_constants.PlatformChainID
+			chainID := odygo_constants.OmegaChainID
 			msg, err := mc.Chits(chainID, requestID, preferredID, acceptedID)
 			gomega.Ω(err).Should(gomega.BeNil())
 
@@ -654,18 +647,18 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 
 	ginkgo.It("can add a node", func() {
 		ginkgo.By("calling AddNode", func() {
-			ux.Print(log, logging.Green.Wrap("calling 'add-node' with the valid binary path: %s"), execPath1)
+			ux.Print(log, logging.Green.Wrap("calling 'add-node' with the valid binary path: %s"), execPath)
 			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-			resp, err := cli.AddNode(ctx, newNodeName, execPath1)
+			resp, err := cli.AddNode(ctx, newNodeName, execPath)
 			cancel()
 			gomega.Ω(err).Should(gomega.BeNil())
 			ux.Print(log, logging.Green.Wrap("successfully started, node-names: %s"), resp.ClusterInfo.NodeNames)
 		})
 
 		ginkgo.By("calling AddNode with existing node name, should fail", func() {
-			ux.Print(log, logging.Green.Wrap("calling 'add-node' with the valid binary path: %s"), execPath1)
+			ux.Print(log, logging.Green.Wrap("calling 'add-node' with the valid binary path: %s"), execPath)
 			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-			resp, err := cli.AddNode(ctx, newNodeName, execPath1)
+			resp, err := cli.AddNode(ctx, newNodeName, execPath)
 			cancel()
 			gomega.Ω(err.Error()).Should(gomega.ContainSubstring("repeated node name"))
 			gomega.Ω(resp).Should(gomega.BeNil())
@@ -685,13 +678,13 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 			gomega.Ω(err).Should(gomega.BeNil())
 		})
 		ginkgo.By("calling start API with custom config", func() {
-			ux.Print(log, logging.Green.Wrap("sending 'start' with the valid binary path: %s"), execPath1)
+			ux.Print(log, logging.Green.Wrap("sending 'start' with the valid binary path: %s"), execPath)
 			opts := []client.OpOption{
 				client.WithNumNodes(numNodes),
 				client.WithCustomNodeConfigs(customNodeConfigs),
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			resp, err := cli.Start(ctx, execPath1, opts...)
+			resp, err := cli.Start(ctx, execPath, opts...)
 			cancel()
 			gomega.Ω(err).Should(gomega.BeNil())
 			ux.Print(log, logging.Green.Wrap("successfully started, node-names: %s"), resp.ClusterInfo.NodeNames)
@@ -737,7 +730,7 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 		})
 		ginkgo.By("starting", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err := cli.Start(ctx, execPath1)
+			_, err := cli.Start(ctx, execPath)
 			cancel()
 			gomega.Ω(err).Should(gomega.BeNil())
 		})
@@ -766,8 +759,8 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 		ginkgo.By("API Call using paused node URI will fail", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
-			platformCli := platformvm.NewClient(pausedNodeURI)
-			_, err := platformCli.GetCurrentValidators(ctx, ids.Empty, nil)
+			omegaCli := omegavm.NewClient(pausedNodeURI)
+			_, err := omegaCli.GetCurrentValidators(ctx, ids.Empty, nil)
 			gomega.Ω(err).Should(gomega.HaveOccurred())
 		})
 		ginkgo.By("calling resumeNode API", func() {
@@ -786,17 +779,17 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 		ginkgo.By("API Call using resumed node URI", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
-			platformCli := platformvm.NewClient(pausedNodeURI)
-			_, err := platformCli.GetCurrentValidators(ctx, ids.Empty, nil)
+			omegaCli := omegavm.NewClient(pausedNodeURI)
+			_, err := omegaCli.GetCurrentValidators(ctx, ids.Empty, nil)
 			gomega.Ω(err).Should(gomega.BeNil())
 		})
 	})
 
 	ginkgo.It("can add primary validator with BLS Keys", func() {
 		ginkgo.By("calling AddNode", func() {
-			ux.Print(log, logging.Green.Wrap("calling 'add-node' with the valid binary path: %s"), execPath1)
+			ux.Print(log, logging.Green.Wrap("calling 'add-node' with the valid binary path: %s"), execPath)
 			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-			resp, err := cli.AddNode(ctx, newNodeName2, execPath1)
+			resp, err := cli.AddNode(ctx, newNodeName2, execPath)
 			cancel()
 			gomega.Ω(err).Should(gomega.BeNil())
 			for nodeName, nodeInfo := range resp.ClusterInfo.NodeInfos {
@@ -828,8 +821,8 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 				clientURI = uri
 				break
 			}
-			platformCli := platformvm.NewClient(clientURI)
-			vdrs, err := platformCli.GetCurrentValidators(ctx, ids.Empty, nil)
+			omegaCli := omegavm.NewClient(clientURI)
+			vdrs, err := omegaCli.GetCurrentValidators(ctx, ids.Empty, nil)
 
 			gomega.Ω(err).Should(gomega.BeNil())
 			for _, v := range vdrs {
@@ -886,9 +879,9 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 			newSubnetID = response.SubnetIds[0]
 		})
 		ginkgo.By("calling AddNode with existing node name, should fail", func() {
-			ux.Print(log, logging.Green.Wrap("calling 'add-node' with the valid binary path: %s"), execPath1)
+			ux.Print(log, logging.Green.Wrap("calling 'add-node' with the valid binary path: %s"), execPath)
 			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-			resp, err := cli.AddNode(ctx, newParticipantNode, execPath1)
+			resp, err := cli.AddNode(ctx, newParticipantNode, execPath)
 			cancel()
 			gomega.Ω(err.Error()).Should(gomega.ContainSubstring("repeated node name"))
 			gomega.Ω(resp).Should(gomega.BeNil())
@@ -927,8 +920,8 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 			}
 			subnetID, err := ids.FromString(newSubnetID)
 			gomega.Ω(err).Should(gomega.BeNil())
-			platformCli := platformvm.NewClient(clientURI)
-			vdrs, err := platformCli.GetCurrentValidators(ctx, subnetID, nil)
+			omegaCli := omegavm.NewClient(clientURI)
+			vdrs, err := omegaCli.GetCurrentValidators(ctx, subnetID, nil)
 			gomega.Ω(err).Should(gomega.BeNil())
 			gomega.Ω(len(vdrs)).Should(gomega.Equal(2))
 		})

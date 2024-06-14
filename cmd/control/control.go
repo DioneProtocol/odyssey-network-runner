@@ -14,13 +14,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ava-labs/avalanche-network-runner/client"
-	"github.com/ava-labs/avalanche-network-runner/local"
-	"github.com/ava-labs/avalanche-network-runner/rpcpb"
-	"github.com/ava-labs/avalanche-network-runner/utils"
-	"github.com/ava-labs/avalanche-network-runner/utils/constants"
-	"github.com/ava-labs/avalanche-network-runner/ux"
-	"github.com/ava-labs/avalanchego/utils/logging"
+	"github.com/DioneProtocol/odyssey-network-runner/client"
+	"github.com/DioneProtocol/odyssey-network-runner/local"
+	"github.com/DioneProtocol/odyssey-network-runner/rpcpb"
+	"github.com/DioneProtocol/odyssey-network-runner/utils"
+	"github.com/DioneProtocol/odyssey-network-runner/utils/constants"
+	"github.com/DioneProtocol/odyssey-network-runner/ux"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -86,7 +86,7 @@ func NewCommand() *cobra.Command {
 }
 
 var (
-	avalancheGoBinPath  string
+	odysseyGoBinPath    string
 	numNodes            uint32
 	pluginDir           string
 	globalNodeConfig    string
@@ -104,12 +104,12 @@ var (
 func setLogs() error {
 	var err error
 	if logDir == "" {
-		anrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
-		err = os.MkdirAll(anrRootDir, os.ModePerm)
+		onrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
+		err = os.MkdirAll(onrRootDir, os.ModePerm)
 		if err != nil {
 			return err
 		}
-		clientRootDir := filepath.Join(anrRootDir, clientRootDirPrefix)
+		clientRootDir := filepath.Join(onrRootDir, clientRootDirPrefix)
 		logDir, err = utils.MkDirWithTimestamp(clientRootDir)
 		if err != nil {
 			return err
@@ -166,10 +166,10 @@ func newStartCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 	}
 	cmd.PersistentFlags().StringVar(
-		&avalancheGoBinPath,
-		"avalanchego-path",
+		&odysseyGoBinPath,
+		"odysseygo-path",
 		"",
-		"avalanchego binary path",
+		"odysseygo binary path",
 	)
 	cmd.PersistentFlags().Uint32Var(
 		&numNodes,
@@ -243,7 +243,7 @@ func newStartCommand() *cobra.Command {
 		false,
 		"true to assign dynamic ports",
 	)
-	if err := cmd.MarkPersistentFlagRequired("avalanchego-path"); err != nil {
+	if err := cmd.MarkPersistentFlagRequired("odysseygo-path"); err != nil {
 		panic(err)
 	}
 	return cmd
@@ -317,7 +317,7 @@ func startFunc(*cobra.Command, []string) error {
 
 	info, err := cli.Start(
 		ctx,
-		avalancheGoBinPath,
+		odysseyGoBinPath,
 		opts...,
 	)
 	if err != nil {
@@ -781,10 +781,10 @@ func newAddNodeCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 	}
 	cmd.PersistentFlags().StringVar(
-		&avalancheGoBinPath,
-		"avalanchego-path",
+		&odysseyGoBinPath,
+		"odysseygo-path",
 		"",
-		"avalanchego binary path",
+		"odysseygo binary path",
 	)
 	cmd.PersistentFlags().StringVar(
 		&addNodeConfig,
@@ -868,7 +868,7 @@ func addNodeFunc(_ *cobra.Command, args []string) error {
 	info, err := cli.AddNode(
 		ctx,
 		nodeName,
-		avalancheGoBinPath,
+		odysseyGoBinPath,
 		opts...,
 	)
 	cancel()
@@ -888,10 +888,10 @@ func newRestartNodeCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 	}
 	cmd.PersistentFlags().StringVar(
-		&avalancheGoBinPath,
-		"avalanchego-path",
+		&odysseyGoBinPath,
+		"odysseygo-path",
 		"",
-		"avalanchego binary path",
+		"odysseygo binary path",
 	)
 	cmd.PersistentFlags().StringVar(
 		&trackSubnets,
@@ -936,7 +936,7 @@ func restartNodeFunc(_ *cobra.Command, args []string) error {
 	defer cli.Close()
 
 	opts := []client.OpOption{
-		client.WithExecPath(avalancheGoBinPath),
+		client.WithExecPath(odysseyGoBinPath),
 		client.WithPluginDir(pluginDir),
 		client.WithTrackSubnets(trackSubnets),
 	}
@@ -1141,10 +1141,10 @@ func newLoadSnapshotCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 	}
 	cmd.PersistentFlags().StringVar(
-		&avalancheGoBinPath,
-		"avalanchego-path",
+		&odysseyGoBinPath,
+		"odysseygo-path",
 		"",
-		"avalanchego binary path",
+		"odysseygo binary path",
 	)
 	cmd.PersistentFlags().StringVar(
 		&pluginDir,
@@ -1199,7 +1199,7 @@ func loadSnapshotFunc(_ *cobra.Command, args []string) error {
 	defer cli.Close()
 
 	opts := []client.OpOption{
-		client.WithExecPath(avalancheGoBinPath),
+		client.WithExecPath(odysseyGoBinPath),
 		client.WithPluginDir(pluginDir),
 		client.WithRootDataDir(rootDataDir),
 		client.WithReassignPortsIfUsed(reassignPortsIfUsed),

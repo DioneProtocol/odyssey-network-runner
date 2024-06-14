@@ -3,15 +3,15 @@ package api
 import (
 	"fmt"
 
-	"github.com/ava-labs/avalanchego/api/admin"
-	"github.com/ava-labs/avalanchego/api/health"
-	"github.com/ava-labs/avalanchego/api/info"
-	"github.com/ava-labs/avalanchego/api/ipcs"
-	"github.com/ava-labs/avalanchego/api/keystore"
-	"github.com/ava-labs/avalanchego/indexer"
-	"github.com/ava-labs/avalanchego/vms/avm"
-	"github.com/ava-labs/avalanchego/vms/platformvm"
-	"github.com/ava-labs/coreth/plugin/evm"
+	"github.com/DioneProtocol/coreth/plugin/delta"
+	"github.com/DioneProtocol/odysseygo/api/admin"
+	"github.com/DioneProtocol/odysseygo/api/health"
+	"github.com/DioneProtocol/odysseygo/api/info"
+	"github.com/DioneProtocol/odysseygo/api/ipcs"
+	"github.com/DioneProtocol/odysseygo/api/keystore"
+	"github.com/DioneProtocol/odysseygo/indexer"
+	"github.com/DioneProtocol/odysseygo/vms/alpha"
+	"github.com/DioneProtocol/odysseygo/vms/omegavm"
 )
 
 // interface compliance
@@ -20,62 +20,62 @@ var (
 	_ NewAPIClientF = NewAPIClient
 )
 
-// APIClient gives access to most avalanchego apis (or suitable wrappers)
+// APIClient gives access to most odysseygo apis (or suitable wrappers)
 type APIClient struct {
-	platform     platformvm.Client
-	xChain       avm.Client
-	xChainWallet avm.WalletClient
-	cChain       evm.Client
-	cChainEth    EthClient
+	omega        omegavm.Client
+	aChain       alpha.Client
+	aChainWallet alpha.WalletClient
+	dChain       delta.Client
+	dChainEth    EthClient
 	info         info.Client
 	health       health.Client
 	ipcs         ipcs.Client
 	keystore     keystore.Client
 	admin        admin.Client
-	pindex       indexer.Client
-	cindex       indexer.Client
+	oindex       indexer.Client
+	dindex       indexer.Client
 }
 
 // Returns a new API client for a node at [ipAddr]:[port].
 type NewAPIClientF func(ipAddr string, port uint16) Client
 
-// NewAPIClient initialize most of avalanchego apis
+// NewAPIClient initialize most of odysseygo apis
 func NewAPIClient(ipAddr string, port uint16) Client {
 	uri := fmt.Sprintf("http://%s:%d", ipAddr, port)
 	return &APIClient{
-		platform:     platformvm.NewClient(uri),
-		xChain:       avm.NewClient(uri, "X"),
-		xChainWallet: avm.NewWalletClient(uri, "X"),
-		cChain:       evm.NewCChainClient(uri),
-		cChainEth:    NewEthClient(ipAddr, uint(port)), // wrapper over ethclient.Client
+		omega:        omegavm.NewClient(uri),
+		aChain:       alpha.NewClient(uri, "A"),
+		aChainWallet: alpha.NewWalletClient(uri, "A"),
+		dChain:       delta.NewDChainClient(uri),
+		dChainEth:    NewEthClient(ipAddr, uint(port)), // wrapper over ethclient.Client
 		info:         info.NewClient(uri),
 		health:       health.NewClient(uri),
 		ipcs:         ipcs.NewClient(uri),
 		keystore:     keystore.NewClient(uri),
 		admin:        admin.NewClient(uri),
-		pindex:       indexer.NewClient(uri + "/ext/index/P/block"),
-		cindex:       indexer.NewClient(uri + "/ext/index/C/block"),
+		oindex:       indexer.NewClient(uri + "/ext/index/O/block"),
+		dindex:       indexer.NewClient(uri + "/ext/index/D/block"),
 	}
 }
 
-func (c APIClient) PChainAPI() platformvm.Client {
-	return c.platform
+func (c APIClient) OChainAPI() omegavm.Client {
+	return c.omega
 }
 
-func (c APIClient) XChainAPI() avm.Client {
-	return c.xChain
+func (c APIClient) AChainAPI() alpha.Client {
+	return c.aChain
 }
 
-func (c APIClient) XChainWalletAPI() avm.WalletClient {
-	return c.xChainWallet
+func (c APIClient) AChainWalletAPI() alpha.WalletClient {
+	return c.aChainWallet
 }
 
-func (c APIClient) CChainAPI() evm.Client {
-	return c.cChain
+func (c APIClient) DChainAPI() delta.Client {
+	return c.dChain
 }
 
-func (c APIClient) CChainEthAPI() EthClient {
-	return c.cChainEth
+func (c APIClient) DChainEthAPI() EthClient {
+	return c.dChainEth
 }
 
 func (c APIClient) InfoAPI() info.Client {
@@ -98,10 +98,10 @@ func (c APIClient) AdminAPI() admin.Client {
 	return c.admin
 }
 
-func (c APIClient) PChainIndexAPI() indexer.Client {
-	return c.pindex
+func (c APIClient) OChainIndexAPI() indexer.Client {
+	return c.oindex
 }
 
-func (c APIClient) CChainIndexAPI() indexer.Client {
-	return c.cindex
+func (c APIClient) DChainIndexAPI() indexer.Client {
+	return c.dindex
 }

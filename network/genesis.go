@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	coreth_params "github.com/ava-labs/coreth/params"
+	coreth_params "github.com/DioneProtocol/coreth/params"
 )
 
 //go:embed default/genesis.json
@@ -22,26 +22,26 @@ func LoadLocalGenesis() (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	cChainGenesis := genesisMap["cChainGenesis"]
-	// set the cchain genesis directly from coreth
-	// the whole of `cChainGenesis` should be set as a string, not a json object...
-	corethCChainGenesis := coreth_params.AvalancheLocalChainConfig
+	dChainGenesis := genesisMap["dChainGenesis"]
+	// set the dchain genesis directly from coreth
+	// the whole of `dChainGenesis` should be set as a string, not a json object...
+	corethDChainGenesis := coreth_params.OdysseyLocalChainConfig
 	// but the part in coreth is only the "config" part.
-	// In order to set it easily, first we get the cChainGenesis item
+	// In order to set it easily, first we get the dChainGenesis item
 	// convert it to a map
-	cChainGenesisMap, ok := cChainGenesis.(map[string]interface{})
+	dChainGenesisMap, ok := dChainGenesis.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf(
-			"expected field 'cChainGenesis' of genesisMap to be a map[string]interface{}, but it failed with type %T", cChainGenesis)
+			"expected field 'dChainGenesis' of genesisMap to be a map[string]interface{}, but it failed with type %T", dChainGenesis)
 	}
 	// set the `config` key to the actual coreth object
-	cChainGenesisMap["config"] = corethCChainGenesis
+	dChainGenesisMap["config"] = corethDChainGenesis
 	// and then marshal everything into a string
-	configBytes, err := json.Marshal(cChainGenesisMap)
+	configBytes, err := json.Marshal(dChainGenesisMap)
 	if err != nil {
 		return nil, err
 	}
-	// this way the whole of `cChainGenesis` is a properly escaped string
-	genesisMap["cChainGenesis"] = string(configBytes)
+	// this way the whole of `dChainGenesis` is a properly escaped string
+	genesisMap["dChainGenesis"] = string(configBytes)
 	return genesisMap, nil
 }

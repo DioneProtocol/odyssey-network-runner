@@ -8,24 +8,24 @@ import (
 	"net"
 	"time"
 
-	"github.com/ava-labs/avalanche-network-runner/api"
-	"github.com/ava-labs/avalanche-network-runner/network/node"
-	"github.com/ava-labs/avalanche-network-runner/network/node/status"
-	"github.com/ava-labs/avalanchego/ids"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/network/peer"
-	"github.com/ava-labs/avalanchego/network/throttling"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/snow/networking/tracker"
-	"github.com/ava-labs/avalanchego/snow/validators"
-	"github.com/ava-labs/avalanchego/staking"
-	"github.com/ava-labs/avalanchego/utils/constants"
-	"github.com/ava-labs/avalanchego/utils/ips"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/math/meter"
-	"github.com/ava-labs/avalanchego/utils/resource"
-	"github.com/ava-labs/avalanchego/utils/set"
-	"github.com/ava-labs/avalanchego/version"
+	"github.com/DioneProtocol/odyssey-network-runner/api"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node/status"
+	"github.com/DioneProtocol/odysseygo/ids"
+	"github.com/DioneProtocol/odysseygo/message"
+	"github.com/DioneProtocol/odysseygo/network/peer"
+	"github.com/DioneProtocol/odysseygo/network/throttling"
+	"github.com/DioneProtocol/odysseygo/snow/networking/router"
+	"github.com/DioneProtocol/odysseygo/snow/networking/tracker"
+	"github.com/DioneProtocol/odysseygo/snow/validators"
+	"github.com/DioneProtocol/odysseygo/staking"
+	"github.com/DioneProtocol/odysseygo/utils/constants"
+	"github.com/DioneProtocol/odysseygo/utils/ips"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
+	"github.com/DioneProtocol/odysseygo/utils/math/meter"
+	"github.com/DioneProtocol/odysseygo/utils/resource"
+	"github.com/DioneProtocol/odysseygo/utils/set"
+	"github.com/DioneProtocol/odysseygo/version"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -42,7 +42,7 @@ const (
 	peerStartWaitTimeout        = 30 * time.Second
 )
 
-// Gives access to basic node info, and to most avalanchego apis
+// Gives access to basic node info, and to most odysseygo apis
 type localNode struct {
 	// Must be unique across all nodes in this network.
 	name string

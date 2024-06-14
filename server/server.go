@@ -21,16 +21,16 @@ import (
 
 	"go.uber.org/multierr"
 
-	"github.com/ava-labs/avalanche-network-runner/network"
-	"github.com/ava-labs/avalanche-network-runner/network/node"
-	"github.com/ava-labs/avalanche-network-runner/rpcpb"
-	"github.com/ava-labs/avalanche-network-runner/utils"
-	"github.com/ava-labs/avalanche-network-runner/utils/constants"
-	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/snow/networking/router"
-	"github.com/ava-labs/avalanchego/utils/logging"
-	"github.com/ava-labs/avalanchego/utils/set"
+	"github.com/DioneProtocol/odyssey-network-runner/network"
+	"github.com/DioneProtocol/odyssey-network-runner/network/node"
+	"github.com/DioneProtocol/odyssey-network-runner/rpcpb"
+	"github.com/DioneProtocol/odyssey-network-runner/utils"
+	"github.com/DioneProtocol/odyssey-network-runner/utils/constants"
+	"github.com/DioneProtocol/odysseygo/config"
+	"github.com/DioneProtocol/odysseygo/message"
+	"github.com/DioneProtocol/odysseygo/snow/networking/router"
+	"github.com/DioneProtocol/odysseygo/utils/logging"
+	"github.com/DioneProtocol/odysseygo/utils/set"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/zap"
 	"golang.org/x/exp/maps"
@@ -113,11 +113,11 @@ type server struct {
 	rpcpb.UnimplementedControlServiceServer
 }
 
-// grpc encapsulates the non protocol-related, ANR server domain errors,
+// grpc encapsulates the non protocol-related, ONR server domain errors,
 // inside grpc.status.Status structs, with status.Code() code.Unknown,
 // and original error msg inside status.Message() string
 // this aux function is to be used by clients, to check for the appropriate
-// ANR domain error kind
+// ONR domain error kind
 func IsServerError(err error, serverError error) bool {
 	status := status.Convert(err)
 	return status.Code() == codes.Unknown && status.Message() == serverError.Error()
@@ -1444,7 +1444,7 @@ func getNetworkBlockchainSpec(
 		return network.BlockchainSpec{}, ErrInvalidVMName
 	}
 
-	// there is no default plugindir from the ANR point of view, will not check if not given
+	// there is no default plugindir from the ONR point of view, will not check if not given
 	if pluginDir != "" {
 		if err := utils.CheckPluginPath(
 			filepath.Join(pluginDir, vmID.String()),

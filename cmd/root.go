@@ -7,17 +7,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ava-labs/avalanche-network-runner/cmd/control"
-	"github.com/ava-labs/avalanche-network-runner/cmd/ping"
-	"github.com/ava-labs/avalanche-network-runner/cmd/server"
+	"github.com/DioneProtocol/odyssey-network-runner/cmd/control"
+	"github.com/DioneProtocol/odyssey-network-runner/cmd/ping"
+	"github.com/DioneProtocol/odyssey-network-runner/cmd/server"
 	"github.com/spf13/cobra"
 )
 
 var Version = ""
 
 var rootCmd = &cobra.Command{
-	Use:        "avalanche-network-runner",
-	Short:      "avalanche-network-runner commands",
+	Use:        "odyssey-network-runner",
+	Short:      "odyssey-network-runner commands",
 	SuggestFor: []string{"network-runner"},
 	Version:    Version,
 }
@@ -36,7 +36,7 @@ func init() {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "avalanche-network-runner failed %v\n", err)
+		fmt.Fprintf(os.Stderr, "odyssey-network-runner failed %v\n", err)
 		os.Exit(1)
 	}
 	os.Exit(0)

@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/ava-labs/avalanche-network-runner/cmd"
+	"github.com/DioneProtocol/odyssey-network-runner/cmd"
 )
 
 func main() {
