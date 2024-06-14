@@ -1361,25 +1361,29 @@ func isClientCanceled(ctxErr error, err error) bool {
 func getNetworkElasticSubnetSpec(
 	spec *rpcpb.ElasticSubnetSpec,
 ) network.ElasticSubnetSpec {
-	minStakeDuration := time.Duration(spec.MinStakeDuration) * time.Hour
-	maxStakeDuration := time.Duration(spec.MaxStakeDuration) * time.Hour
+	minValidatorStakeDuration := time.Duration(spec.MinValidatorStakeDuration) * time.Hour
+	maxValidatorStakeDuration := time.Duration(spec.MaxValidatorStakeDuration) * time.Hour
+	minDelegatorStakeDuration := time.Duration(spec.MinDelegatorStakeDuration) * time.Hour
+	maxDelegatorStakeDuration := time.Duration(spec.MaxDelegatorStakeDuration) * time.Hour
 
 	elasticSubnetSpec := network.ElasticSubnetSpec{
-		SubnetID:                 &spec.SubnetId,
-		AssetName:                spec.AssetName,
-		AssetSymbol:              spec.AssetSymbol,
-		InitialSupply:            spec.InitialSupply,
-		MaxSupply:                spec.MaxSupply,
-		MinConsumptionRate:       spec.MinConsumptionRate,
-		MaxConsumptionRate:       spec.MaxConsumptionRate,
-		MinValidatorStake:        spec.MinValidatorStake,
-		MaxValidatorStake:        spec.MaxValidatorStake,
-		MinStakeDuration:         minStakeDuration,
-		MaxStakeDuration:         maxStakeDuration,
-		MinDelegationFee:         spec.MinDelegationFee,
-		MinDelegatorStake:        spec.MinDelegatorStake,
-		MaxValidatorWeightFactor: byte(spec.MaxValidatorWeightFactor),
-		UptimeRequirement:        spec.UptimeRequirement,
+		SubnetID:                  &spec.SubnetId,
+		AssetName:                 spec.AssetName,
+		AssetSymbol:               spec.AssetSymbol,
+		InitialSupply:             spec.InitialSupply,
+		MaxSupply:                 spec.MaxSupply,
+		MinConsumptionRate:        spec.MinConsumptionRate,
+		MaxConsumptionRate:        spec.MaxConsumptionRate,
+		MinValidatorStake:         spec.MinValidatorStake,
+		MaxValidatorStake:         spec.MaxValidatorStake,
+		MinValidatorStakeDuration: minValidatorStakeDuration,
+		MaxValidatorStakeDuration: maxValidatorStakeDuration,
+		MinDelegatorStakeDuration: minDelegatorStakeDuration,
+		MaxDelegatorStakeDuration: maxDelegatorStakeDuration,
+		MinDelegationFee:          spec.MinDelegationFee,
+		MinDelegatorStake:         spec.MinDelegatorStake,
+		MaxValidatorWeightFactor:  byte(spec.MaxValidatorWeightFactor),
+		UptimeRequirement:         spec.UptimeRequirement,
 	}
 	return elasticSubnetSpec
 }

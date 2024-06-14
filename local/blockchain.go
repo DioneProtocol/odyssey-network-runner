@@ -1080,11 +1080,11 @@ func (ln *localNetwork) transformToElasticSubnets(
 		transformSubnetTxID, err := w.pWallet.IssueTransformSubnetTx(subnetID, subnetAssetID,
 			elasticSubnetSpec.InitialSupply, elasticSubnetSpec.MaxSupply, elasticSubnetSpec.MinConsumptionRate,
 			elasticSubnetSpec.MaxConsumptionRate, elasticSubnetSpec.MinValidatorStake, elasticSubnetSpec.MaxValidatorStake,
-			elasticSubnetSpec.MinStakeDuration, elasticSubnetSpec.MaxStakeDuration, elasticSubnetSpec.MinDelegationFee,
-			elasticSubnetSpec.MinDelegatorStake, elasticSubnetSpec.MaxValidatorWeightFactor, elasticSubnetSpec.UptimeRequirement,
-			common.WithContext(cctx),
-			defaultPoll,
-		)
+			elasticSubnetSpec.MinValidatorStakeDuration, elasticSubnetSpec.MaxValidatorStakeDuration,
+			elasticSubnetSpec.MinDelegatorStakeDuration, elasticSubnetSpec.MaxDelegatorStakeDuration,
+			elasticSubnetSpec.MinDelegationFee, elasticSubnetSpec.MinDelegatorStake,
+			elasticSubnetSpec.MaxValidatorWeightFactor, elasticSubnetSpec.UptimeRequirement,
+			common.WithContext(cctx), defaultPoll)
 		cancel()
 		if err != nil {
 			return nil, nil, err
