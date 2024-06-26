@@ -10,7 +10,7 @@ if ! [[ "$0" =~ scripts/tests.e2e.sh ]]; then
     exit 255
 fi
 
-ANR_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+ONR_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
 DEFAULT_VERSION_1=v0.0.1
 DEFAULT_SUBNET_EVM_VERSION=develop
@@ -22,13 +22,13 @@ else
     VERSION_1=$1
     if [[ -z "${VERSION_1}" ]]; then
         echo "Missing version argument!"
-        echo "Usage: ${0} [VERSION_1] [VERSION_2] [SUBNET_EVM_VERSION]" >>/dev/stderr
+        echo "Usage: ${0} [VERSION_1] [SUBNET_EVM_VERSION]" >>/dev/stderr
         exit 255
     fi
     SUBNET_EVM_VERSION=$3
     if [[ -z "${SUBNET_EVM_VERSION}" ]]; then
         echo "Missing version argument!"
-        echo "Usage: ${0} [VERSION_1] [VERSION_2] [SUBNET_EVM_VERSION]" >>/dev/stderr
+        echo "Usage: ${0} [VERSION_1] [SUBNET_EVM_VERSION]" >>/dev/stderr
         exit 255
     fi
 fi
@@ -88,7 +88,7 @@ fi
 
 ############################
 
-cd $ANR_PATH
+cd $ONR_PATH
 
 echo "building runner"
 ./scripts/build.sh

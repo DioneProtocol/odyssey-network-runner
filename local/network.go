@@ -1121,11 +1121,11 @@ func (ln *localNetwork) buildArgs(
 
 	// map input flags to the corresponding odygo version, making sure that latest flags don't break
 	// old odygo versions
-	flagsForAvagoVersion := getFlagsForAvagoVersion(nodeSemVer, flags)
+	flagsForOdygoVersion := getFlagsForOdygoVersion(nodeSemVer, flags)
 
 	// create args
 	args := []string{}
-	for k, v := range flagsForAvagoVersion {
+	for k, v := range flagsForOdygoVersion {
 		args = append(args, fmt.Sprintf("--%s=%s", k, v))
 	}
 
@@ -1151,19 +1151,19 @@ func (ln *localNetwork) getNodeSemVer(nodeConfig node.Config) (string, error) {
 		)
 	}
 	re := regexp.MustCompile(`\/([^ ]+)`)
-	matchs := re.FindStringSubmatch(nodeVersionOutput)
-	if len(matchs) != 2 {
+	matches := re.FindStringSubmatch(nodeVersionOutput)
+	if len(matches) != 2 {
 		return "", fmt.Errorf(
 			"invalid version output %q for binary %q: version pattern not found",
 			nodeVersionOutput, nodeConfig.BinaryPath,
 		)
 	}
-	nodeSemVer := "v" + matchs[1]
+	nodeSemVer := "v" + matches[1]
 	return nodeSemVer, nil
 }
 
 // ensure flags are compatible with the running odysseygo version
-func getFlagsForAvagoVersion(odygoVersion string, givenFlags map[string]string) map[string]string {
+func getFlagsForOdygoVersion(odygoVersion string, givenFlags map[string]string) map[string]string {
 	flags := maps.Clone(givenFlags)
 	for _, deprecatedFlagInfo := range deprecatedFlagsSupport {
 		if semver.Compare(odygoVersion, deprecatedFlagInfo.Version) < 0 {

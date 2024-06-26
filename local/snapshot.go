@@ -34,7 +34,7 @@ type NetworkState struct {
 }
 
 // snapshots generated using older ONR versions may contain deprecated odygo flags
-func fixDeprecatedAvagoFlags(flags map[string]interface{}) error {
+func fixDeprecatedOdygoFlags(flags map[string]interface{}) error {
 	if vIntf, ok := flags[deprecatedWhitelistedSubnetsKey]; ok {
 		v, ok := vIntf.(string)
 		if !ok {
@@ -243,14 +243,14 @@ func (ln *localNetwork) loadSnapshot(
 	}
 	networkConfig := network.Config{}
 	if err := json.Unmarshal(networkConfigJSON, &networkConfig); err != nil {
-		return fmt.Errorf("failure unmarshaling network config from snapshot: %w", err)
+		return fmt.Errorf("failure unmarshalling network config from snapshot: %w", err)
 	}
 	// fix deprecated odygo flags
-	if err := fixDeprecatedAvagoFlags(networkConfig.Flags); err != nil {
+	if err := fixDeprecatedOdygoFlags(networkConfig.Flags); err != nil {
 		return err
 	}
 	for i := range networkConfig.NodeConfigs {
-		if err := fixDeprecatedAvagoFlags(networkConfig.NodeConfigs[i].Flags); err != nil {
+		if err := fixDeprecatedOdygoFlags(networkConfig.NodeConfigs[i].Flags); err != nil {
 			return err
 		}
 	}
