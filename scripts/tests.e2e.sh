@@ -12,7 +12,7 @@ fi
 
 ANR_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
-DEFAULT_VERSION_1=develop
+DEFAULT_VERSION_1=v0.0.1
 DEFAULT_SUBNET_EVM_VERSION=develop
 
 if [ $# == 0 ]; then
@@ -47,12 +47,12 @@ export CGO_CFLAGS="-O -D__BLST_PORTABLE__"
 ############################
 ODYSSEYGO_REPO=/tmp/odysseygo/
 if [ ! -d $ODYSSEYGO_REPO ]; then
-    git clone https://git.sfxdx.com/green-energy1/odyssey-avax-fork $ODYSSEYGO_REPO
+    git clone https://github.com/DioneProtocol/odysseygo $ODYSSEYGO_REPO
 fi
 
 CORETH_REPO=/tmp/coreth/
 if [ ! -d $CORETH_REPO ]; then
-    git clone https://git.sfxdx.com/green-energy1/go-ethereum $CORETH_REPO
+    git clone https://github.com/DioneProtocol/coreth $CORETH_REPO
 fi
 
 VERSION_1_DIR=/tmp/odysseygo-${VERSION_1}/
