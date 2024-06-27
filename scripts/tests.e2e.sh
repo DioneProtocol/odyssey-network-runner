@@ -13,7 +13,7 @@ fi
 ONR_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
 DEFAULT_VERSION_1=v0.0.1
-DEFAULT_SUBNET_EVM_VERSION=develop
+DEFAULT_SUBNET_EVM_VERSION=v0.0.1
 
 if [ $# == 0 ]; then
     VERSION_1=$DEFAULT_VERSION_1
@@ -68,11 +68,7 @@ fi
 
 SUBNET_EVM_REPO=/tmp/subnet-evm-repo/
 if [ ! -d $SUBNET_EVM_REPO ]; then
-    git clone https://git.sfxdx.com/green-energy1/odyssey_subnets $SUBNET_EVM_REPO
-    cd $SUBNET_EVM_REPO
-    echo "replace github.com/DioneProtocol/odysseygo => ../odysseygo/" >>$SUBNET_EVM_REPO/go.mod
-    echo "replace github.com/DioneProtocol/coreth => ../coreth/" >>$SUBNET_EVM_REPO/go.mod
-    go mod tidy
+    git clone https://github.com/DioneProtocol/subnet-evm $SUBNET_EVM_REPO
 fi
 
 SUBNET_EVM_VERSION_DIR=/tmp/subnet-evm-${SUBNET_EVM_VERSION}/
