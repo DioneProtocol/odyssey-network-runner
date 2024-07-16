@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/DioneProtocol/coreth v0.0.1
-	github.com/DioneProtocol/odysseygo v0.0.1
+	github.com/DioneProtocol/odysseygo v1.10.10
 	github.com/ethereum/go-ethereum v1.12.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/onsi/ginkgo/v2 v2.8.1
